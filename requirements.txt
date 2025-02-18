@@ -1,4 +1,6 @@
-fastapi
-sqlmodel
-alembic
-uvicorn
+fastapi==0.115.8
+sqlmodel==0.0.22
+sqlalchemy==2.0.38
+alembic==1.14.1
+uvicorn==0.34.0
+passlib==3.0.2

@@ -1,3 +1,6 @@
+# installer les dépendances :
+pip install -r requirements.txt
+
 # Initialiser Alembic :
 alembic init alembic
 
@@ -8,7 +11,7 @@ sqlalchemy.url = sqlite:///./test.db
 
 # Modifier env.py dans le dossier alembic/
 
-from mymodel import mymodel  # Une ancienne configuration qui ne fonctionnera pas pour SQLModel
+<!-- from mymodel import mymodel  # Une ancienne configuration qui ne fonctionnera pas pour SQLModel
 
 Modifie cette ligne pour qu'elle inclut les modèles SQLModel :
 
@@ -66,4 +69,4 @@ def downgrade():
     # Ce code est également généré par Alembic
     pass
 
-Note : Les migrations générées par alembic revision --autogenerate peuvent parfois nécessiter un peu d'ajustement. Alembic ne sera pas toujours capable de tout générer correctement, en particulier si des fonctionnalités comme SQLModel sont utilisées. Mais pour les modèles simples, cela devrait fonctionner correctement.
+Note : Les migrations générées par alembic revision --autogenerate peuvent parfois nécessiter un peu d'ajustement. Alembic ne sera pas toujours capable de tout générer correctement, en particulier si des fonctionnalités comme SQLModel sont utilisées. Mais pour les modèles simples, cela devrait fonctionner correctement. -->
