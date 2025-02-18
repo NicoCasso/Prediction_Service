@@ -2,10 +2,11 @@ from fastapi import HTTPException, Depends
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from typing import Optional
+
 from sqlalchemy.orm import Session
 from models import User
 from config import ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
-from database import get_db
+from db_session_provider import get_db_session
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
@@ -32,14 +33,14 @@ def verify_token(token: str):
     except JWTError:
         raise credentials_exception
 
-def get_current_user(token: str = Depends(verify_token), db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.username == token).first()
+def get_current_user(token: str = Depends(verify_token), db: Session = Depends(get_db_session)):
+    user = db.query(User).filter(User.email == token).first()
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
     return user
 
-def get_current_admin(token: str = Depends(verify_token), db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.username == token).first()
+def get_current_admin(token: str = Depends(verify_token), db: Session = Depends(get_db_session)):
+    user = db.query(User).filter(User.email == token).first()
     if not user or user.role != "admin":
         raise HTTPException(status_code=403, detail="Not enough permissions")
     return user

@@ -2,16 +2,20 @@ from sqlmodel import Field, SQLModel, Relationship
 from passlib.context import CryptContext
 from typing import List, Optional
 
-
+#______________________________________________________________________________
+#
+# region User : référence de la base de données
+#______________________________________________________________________________
 class User(SQLModel, table=True):
     """
-    id: Identifiant unique de l'utilisateur.
+        id: Identifiant unique de l'utilisateur.
         email: L'email unique de l'utilisateur.
         password_hash: Le mot de passe haché.
         role: Le rôle de l'utilisateur (par exemple, "user" ou "admin").
         is_active: Un champ booléen pour savoir si le compte est activé ou non.
         loans: Une relation avec la table LoanRequest, 
-        chaque utilisateur peut avoir plusieurs demandes de prêt."""
+        chaque utilisateur peut avoir plusieurs demandes de prêt.
+        """
     __tablename__ = "users"
 
     id: int = Field(default=None, primary_key=True)
@@ -35,7 +39,10 @@ class User(SQLModel, table=True):
         """
         return CryptContext(schemes=["bcrypt"]).verify(password, self.password_hash)
 
-
+#______________________________________________________________________________
+#
+# region LoanRequest : référence de la base de données
+#______________________________________________________________________________
 class LoanRequest(SQLModel, table=True):
     __tablename__ = "loan_requests"
 

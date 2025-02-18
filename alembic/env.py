@@ -1,5 +1,6 @@
 import sys
-from pathlib import Path
+from os.path import abspath, dirname
+#from pathlib import Path
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config, pool
@@ -7,16 +8,22 @@ from sqlalchemy.ext.declarative import declarative_base
 
 from alembic import context
 from sqlmodel import SQLModel
+
+#______________________________________________________________________________
+#
+# Ajouter le chemin vers le dossier principal de l'application 
+# pour importer correctement les fichier config.py, models.py
+#______________________________________________________________________________
+print(__file__)
+sys.path.append(dirname(dirname(abspath(__file__))))
+
+from config import DATABASE_URL
+
 #______________________________________________________________________________
 #
 # import des données du modèle pour Alembic
 #______________________________________________________________________________
 from models import User, LoanRequest 
-
-# C'est important d'ajouter le chemin vers le dossier principal de l'application pour importer correctement les modèles
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-
-# Import des modèles que tu souhaites inclure dans les migrations
 from models import User, LoanRequest  # Assure-toi que le chemin vers models est correct
 
 #______________________________________________________________________________
@@ -28,6 +35,7 @@ config = context.config
 
 # Lire le fichier de configuration .ini pour les paramètres de connexion à la base de données
 fileConfig(config.config_file_name)
+config.set_section_option("alembic", "sqlalchemy.url", DATABASE_URL)
 
 #______________________________________________________________________________
 #
