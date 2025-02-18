@@ -6,6 +6,7 @@ from models import User
 user_email = "nicolas.cassonnet@wanadoo.fr"
 user_password = "nicolas.cassonnet@wanadoo.fr"
 user_name = "Nicolas"
+user_role = "admin"
 def init() :
 
     engine = create_engine(DATABASE_URL)
@@ -19,6 +20,7 @@ def init() :
             new_user= User(email=user_email)
             new_user.set_password(user_password)
             new_user.username = user_name
+            new_user.role = user_role
             session.add(new_user)
             session.commit()
 
