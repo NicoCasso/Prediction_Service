@@ -14,7 +14,7 @@ router = APIRouter()
 
 #______________________________________________________________________________
 #
-# Connexion et récupération du token
+# region Connexion et récupération du token
 #______________________________________________________________________________
 @router.post("/auth/login", response_model=Token)
 def login_for_access_token(connection_data: UserConnectionData, 
@@ -42,7 +42,7 @@ def login_for_access_token(connection_data: UserConnectionData,
 
 #______________________________________________________________________________
 #
-# Activation du compte et changement du mot de passe
+# region Activation du compte et changement du mot de passe
 #______________________________________________________________________________
 @router.post("/auth/activation")
 def activate_account(user: UserConnectionData, 
@@ -77,7 +77,7 @@ def activate_account(user: UserConnectionData,
 
 #______________________________________________________________________________
 #
-# Déconnexion
+# region Déconnexion
 #______________________________________________________________________________
 @router.post("/auth/logout")
 def logout(token: str = Depends(verify_token)):

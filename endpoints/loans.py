@@ -8,7 +8,7 @@ router = APIRouter()
 
 #______________________________________________________________________________
 #
-# Prédiction d'éligibilité à un prêt
+# region Prédiction d'éligibilité à un prêt
 #______________________________________________________________________________
 @router.get("/loans/predict")
 def predict_loan_eligibility(token: str = Depends(verify_token)):
@@ -19,7 +19,7 @@ def predict_loan_eligibility(token: str = Depends(verify_token)):
 
 #______________________________________________________________________________
 #
-# Soumission d'une demande de prêt
+# region Soumission d'une demande de prêt
 #______________________________________________________________________________
 @router.post("/loans/request")
 def request_loan(loan_request: dict, token: str = Depends(verify_token), session: Session = Depends(get_db_session)):
@@ -32,7 +32,7 @@ def request_loan(loan_request: dict, token: str = Depends(verify_token), session
 
 #______________________________________________________________________________
 #
-# Historique des demandes
+# region Historique des demandes
 #______________________________________________________________________________
 @router.get("/loans/history")
 def loan_history(token: str = Depends(verify_token), session: Session = Depends(get_db_session)):

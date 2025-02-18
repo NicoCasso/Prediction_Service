@@ -9,6 +9,7 @@ from typing import List, Optional
 class User(SQLModel, table=True):
     """
         id: Identifiant unique de l'utilisateur.
+        username .. ajouté
         email: L'email unique de l'utilisateur.
         password_hash: Le mot de passe haché.
         role: Le rôle de l'utilisateur (par exemple, "user" ou "admin").
@@ -19,6 +20,7 @@ class User(SQLModel, table=True):
     __tablename__ = "users"
 
     id: int = Field(default=None, primary_key=True)
+    username : str = Field(default="rien", nullable=True)
     email: str = Field(unique=True, index=True, nullable=False)
     password_hash: str
     role: str = Field(default="user", nullable=False)

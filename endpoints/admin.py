@@ -19,7 +19,7 @@ def get_users(current_user: str = Depends(get_current_admin),
 
 #______________________________________________________________________________
 #
-# Création d'un utilisateur (Admin)
+# region Création d'un utilisateur (Admin)
 #______________________________________________________________________________
 @router.post("/admin/users", response_model=User)
 def create_user(user: UserCreationData, 

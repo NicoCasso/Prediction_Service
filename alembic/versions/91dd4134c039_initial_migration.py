@@ -11,7 +11,7 @@ from alembic import op
 import sqlalchemy as sa
 #______________________________________________________________________________
 #
-# ligne ajoutée
+# region ligne ajoutée : import sqlmodel 
 #______________________________________________________________________________
 import sqlmodel 
 
