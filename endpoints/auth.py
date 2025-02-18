@@ -38,7 +38,7 @@ def login_for_access_token(connection_data: UserConnectionData,
     )
 
     # Retourne le token d'accès et le type de token
-    return {"access_token": access_token, "token_type": "bearer"}
+    return Token (access_token = access_token, token_type = "bearer")
 
 #______________________________________________________________________________
 #
