@@ -30,6 +30,13 @@ def login_for_access_token(connection_data: UserConnectionData,
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    
+    # Vérifie si l'utilisateur doit changer son mot de passe
+    if user.must_change_password:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Vous devez changer votre mot de passe avant de continuer.",
+        )
 
     # Si l'utilisateur existe et que le mot de passe est valide, créer un token d'accès
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -63,16 +70,18 @@ def activate_account(user: UserConnectionData,
     
     # Mise à jour du mot de passe de l'utilisateur
     db_user.set_password(user.password)  # Met à jour le mot de passe (il est haché)
+   
 
     # Activer le compte de l'utilisateur
     db_user.is_active = True
+    db_user.must_change_password = True  # Force le changement de mot de passe à la prochaine connexion
     
     # Enregistrer les modifications dans la base de données
     session.commit()
     session.refresh(db_user)
 
     # Retourne un message de confirmation
-    return {"msg": "Account activated and password updated successfully."}
+    return {"msg": "Account activated and password updated successfully. Please change your password upon next login"}
 
 
 #______________________________________________________________________________

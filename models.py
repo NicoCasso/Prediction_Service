@@ -25,6 +25,7 @@ class User(SQLModel, table=True):
     password_hash: str
     role: str = Field(default="user", nullable=False)
     is_active: bool = Field(default=False)
+    #must_change_password: bool = True # changement de mot de passe à la 1ere connexion
     
     # Relation pour lier les demandes de prêt à un utilisateur
     loans: List["LoanRequest"] = Relationship(back_populates="user")
