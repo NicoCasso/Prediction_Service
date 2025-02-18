@@ -3,12 +3,9 @@ from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from typing import Optional
 from sqlalchemy.orm import Session
-from .models import User
-from .config import ACCESS_TOKEN_EXPIRE_MINUTES
-from .database import get_db
-
-SECRET_KEY = "your_secret_key"
-ALGORITHM = "HS256"
+from models import User
+from config import ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
+from database import get_db
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()

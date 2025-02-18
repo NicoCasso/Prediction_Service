@@ -4,7 +4,14 @@ from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config, pool
 from sqlalchemy.ext.declarative import declarative_base
+
+from alembic import context
 from sqlmodel import SQLModel
+#______________________________________________________________________________
+#
+# import des données du modèle pour Alembic
+#______________________________________________________________________________
+from models import User, LoanRequest 
 
 # C'est important d'ajouter le chemin vers le dossier principal de l'application pour importer correctement les modèles
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -14,7 +21,8 @@ from models import User, LoanRequest  # Assure-toi que le chemin vers models est
 
 #______________________________________________________________________________
 #
-# Lire la configuration de la base de données depuis le fichier alembic.ini
+# Récupérer la configuration d'Alembic
+# nécessite d'avoir lancé une première fois 
 #______________________________________________________________________________
 config = context.config
 

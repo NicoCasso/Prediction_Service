@@ -4,37 +4,7 @@ pip install -r requirements.txt
 # Initialiser Alembic :
 alembic init alembic
 
-# Configurer alembic.ini
-Dans le fichier alembic.ini qui a été généré, il faut spécifier l'URL de connexion à la base de données. 
-
-sqlalchemy.url = sqlite:///./test.db
-
-# Modifier env.py dans le dossier alembic/
-
-<!-- from mymodel import mymodel  # Une ancienne configuration qui ne fonctionnera pas pour SQLModel
-
-Modifie cette ligne pour qu'elle inclut les modèles SQLModel :
-
-from models import Base  # Remplacer par le modèle défini dans ton projet
-from sqlmodel import SQLModel
-
-Ensuite, dans la fonction run_migrations_online(), tu dois t'assurer qu'Alembic utilise SQLModel pour récupérer les métadonnées.
-
-Change cette section de code :
-
-target_metadata = mymodel.Base.metadata  # Cela doit pointer vers SQLModel.Base
-
-Par cette ligne :
-
-target_metadata = SQLModel.metadata  # Utilisation de SQLModel pour la récupération des métadonnées
-
-Cela permet à Alembic de savoir comment appliquer les migrations en utilisant les modèles définis avec SQLModel.
-Étape 5 : Générer et appliquer les migrations
-
-Une fois que tout est configuré, tu peux maintenant générer des migrations. Voici les étapes :
-
-    Générer une migration : Cette commande va comparer le schéma actuel de la base de données avec le modèle que tu as défini dans ton code, et générer un fichier de migration correspondant.
-
+# Créer une migration initiale:
 alembic revision --autogenerate -m "Initial migration"
 
 Cette commande crée un fichier de migration dans le dossier alembic/versions/ avec un nom qui commence par un identifiant unique et se termine par la description du message.

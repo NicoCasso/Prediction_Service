@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from ..models import LoanRequest
-from ..dependencies import verify_token, get_current_user
+from models import LoanRequest
+from dependencies import verify_token, get_current_user
 
 router = APIRouter()
 

@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from datetime import timedelta
-from ..models import User, UserCreate, Token
-from ..dependencies import get_session, create_access_token, verify_token
-from ..config import ACCESS_TOKEN_EXPIRE_MINUTES
+from models import User, UserCreate, Token
+from dependencies import get_session, create_access_token, verify_token
+from config import ACCESS_TOKEN_EXPIRE_MINUTES
 
 router = APIRouter()
 
