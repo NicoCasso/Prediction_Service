@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from endpoints import auth, loans, admin
 
-from init_user import init
+#from init_user import init
 
 app = FastAPI()
 

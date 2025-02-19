@@ -5,3 +5,5 @@ alembic==1.14.1
 uvicorn==0.34.0
 python-jose==3.3.0
 passlib==3.0.2
+pytest==8.3.4
+httpx==0.28.3

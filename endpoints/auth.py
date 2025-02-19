@@ -17,8 +17,9 @@ router = APIRouter()
 # region Connexion et récupération du token
 #______________________________________________________________________________
 @router.post("/auth/login", response_model=Token)
-def login_for_access_token(connection_data: UserConnectionData, 
-                           session: Session = Depends(get_db_session)) -> Token:
+def login_for_access_token(
+    connection_data: UserConnectionData, 
+    session: Session = Depends(get_db_session)) -> Token:
 
     # Cherche l'utilisateur dans la base de données par son email
     user = session.query(User).filter(User.email == connection_data.email).first()
@@ -45,9 +46,10 @@ def login_for_access_token(connection_data: UserConnectionData,
 # region Activation du compte et changement du mot de passe
 #______________________________________________________________________________
 @router.post("/auth/activation")
-def activate_account(user: UserConnectionData, 
-                     token: str = Depends(verify_token), 
-                     session: Session = Depends(get_db_session)):
+def activate_account(
+    user: UserConnectionData, 
+    token: str = Depends(verify_token), 
+    session: Session = Depends(get_db_session)):
     
     # Récupère l'utilisateur actuel en fonction du token
     current_user = get_current_user(token)
@@ -73,7 +75,6 @@ def activate_account(user: UserConnectionData,
 
     # Retourne un message de confirmation
     return {"msg": "Account activated and password updated successfully."}
-
 
 #______________________________________________________________________________
 #

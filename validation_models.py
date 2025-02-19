@@ -18,7 +18,7 @@ class UserConnectionData(BaseModel):
     password: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 #______________________________________________________________________________
 #
@@ -31,4 +31,4 @@ class UserCreationData(BaseModel):
     is_active: Optional[bool] = Field(default=False)  # Le compte est désactivé par défaut
 
     class Config:
-        orm_mode = True  # Cela permet de convertir le modèle Pydantic en un modèle SQLAlchemy si besoin
+        from_attributes = True  # Cela permet de convertir le modèle Pydantic en un modèle SQLAlchemy si besoin
