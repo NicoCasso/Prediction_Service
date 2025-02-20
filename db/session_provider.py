@@ -1,21 +1,22 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import sessionmaker, Session, scoped_session
+from contextlib import contextmanager
+
+#application imports
 from core.config import DATABASE_URL
 
-# Création de l'engine SQLAlchemy
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})  # connect_args nécessaire pour SQLite
 
-# SessionMaker pour gérer les sessions SQLAlchemy
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+session_scope = scoped_session(SessionLocal)
 
-# Définition de la base
-Base : DeclarativeMeta = declarative_base()
+Base: DeclarativeMeta = declarative_base()
 
-# Fonction pour obtenir une session DB
+@contextmanager
 def get_db_session() -> Session:
-    db = SessionLocal()
+    db_session = session_scope()  
     try:
-        yield db
+        yield db_session
     finally:
-        db.close()
+        db_session.remove()

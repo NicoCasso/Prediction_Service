@@ -1,16 +1,17 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-from models.models import UserInDb
-from schemas.users_data import UserInfoData, UserCreationData
 from typing import List
 
-import core.password_management as pm 
-
-from schemas.auth_data import Token
-from utils.jwt_handlers import verify_token, get_current_admin
+# application imports
+from core.password_tools import get_password_hash
+from core.user_role_tools import get_current_admin
 from db.session_provider import get_db_session
-
+from db.token_white_list import register_token, is_valid_token, invalidate_token
+from models.models import UserInDb
+from schemas.users_data import UserInfoData, UserCreationData
+from schemas.auth_data import Token
+from utils.jwt_handlers import verify_token
 
 router = APIRouter()
 
@@ -24,20 +25,20 @@ unauthorised_exception = HTTPException(
 
 #______________________________________________________________________________
 #
-# Liste des utilisateurs (Admin)
+# region Liste des utilisateurs (Admin)
 #______________________________________________________________________________
 @router.get("/admin/users", response_model=List[UserInfoData])
 def get_users(
     token : str  = Depends(admin_scheme), 
-    session: Session = Depends(get_db_session)):
-    
-    payload = verify_token(token)
-    if payload is None:
+    db_session: Session = Depends(get_db_session)) -> list[UserInfoData]:
+
+    if not is_valid_token(token, db_session) :
         raise unauthorised_exception
     
-    db_admin = get_current_admin(payload, session)
+    payload = verify_token(token)
+    db_admin = get_current_admin(payload, db_session)
 
-    db_users = session.query(UserInDb).all()
+    db_users = db_session.query(UserInDb).all()
 
     users_data = []
     for db_user in db_users :
@@ -61,6 +62,9 @@ def create_user(
     token : str = Depends(admin_scheme), 
     db_session: Session = Depends(get_db_session)) -> UserInfoData:
 
+    if not is_valid_token(token, db_session) :
+        raise unauthorised_exception
+
     payload = verify_token(token)
     db_admin = get_current_admin(payload, db_session)
 
@@ -71,7 +75,7 @@ def create_user(
     
     db_user = UserInDb(email=creation_data.email)
     db_user.username = creation_data.username
-    db_user.password_hash = pm.get_password_hash(creation_data.email)
+    db_user.password_hash = get_password_hash(creation_data.email)
     db_user.is_active = creation_data.is_active
     db_user.role = creation_data.role
     db_session.add(db_user)

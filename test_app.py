@@ -6,7 +6,7 @@ from endpoints import auth, loans, admin
 
 from utils.jwt_handlers import get_current_admin, get_current_user, verify_token
 from db.session_provider import get_db_session
-import core.password_management as pm
+import core.password_tools as pm
 import populate_db as populate_db 
 
 # Créer une instance de l'application FastAPI

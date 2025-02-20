@@ -12,7 +12,7 @@ from alembic import context
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 # Import des modèles à inclure dans les migrations
-from models.models import UserInDb, LoanRequestInDb  # Attention au chemin d'acces
+from models.models import UserInDb, LoanRequestInDb, TokenInDB # Attention au chemin d'acces
 
 #______________________________________________________________________________
 #
@@ -34,7 +34,6 @@ target_metadata = SQLModel.metadata  # Cela pointe vers les métadonnées des mo
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
-
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.

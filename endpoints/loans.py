@@ -1,10 +1,13 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from utils.jwt_handlers import verify_token, get_current_user
-
 from sqlalchemy.orm import Session
-from models.models import LoanRequestInDb
+
+# application imports
+from core.user_role_tools import get_current_user
 from db.session_provider import get_db_session
+from db.token_white_list import register_token, is_valid_token, invalidate_token
+from models.models import LoanRequestInDb
+from utils.jwt_handlers import verify_token
 
 
 router = APIRouter()
@@ -12,6 +15,12 @@ router = APIRouter()
 predict_scheme = OAuth2PasswordBearer(tokenUrl="/loans/predict")
 request_scheme = OAuth2PasswordBearer(tokenUrl="/loans/request")
 history_scheme = OAuth2PasswordBearer(tokenUrl="/loans/history")
+
+unauthorised_exception = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail="Token d'authentification invalide",
+    headers={"WWW-Authenticate": "Bearer"},
+)
 
 #______________________________________________________________________________
 #
@@ -24,6 +33,10 @@ def predict_loan_eligibility(
     """
     Prédiction d'éligibilité à un prêt
     """
+
+    if not is_valid_token(token, db_session) :
+        raise unauthorised_exception
+
     payload = verify_token(token)
     current_user = get_current_user(token)
 
@@ -43,6 +56,10 @@ def request_loan(
     """
     Soumission d'une demande de prêt
     """
+
+    if not is_valid_token(token, db_session) :
+        raise unauthorised_exception
+    
     payload = verify_token(token)
     current_user = get_current_user(token)
 
@@ -65,6 +82,10 @@ def loan_history(
     """
     Historique des demandes de prêt
     """
+
+    if not is_valid_token(token, db_session) :
+        raise unauthorised_exception
+    
     payload = verify_token(token)
     current_user = get_current_user(payload, db_session)
 

@@ -2,7 +2,7 @@ from sqlmodel import SQLModel, Field, Session, create_engine, select
 from core.config import DATABASE_URL
 from models.models import UserInDb
 from schemas.users_data import UserCreationData
-from core.password_management import get_password_hash
+from core.password_tools import get_password_hash
 
 object_list = []
 object_list.append(

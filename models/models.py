@@ -1,4 +1,5 @@
 from sqlmodel import Field, SQLModel, Relationship
+from datetime import datetime
 from passlib.context import CryptContext
 from typing import List, Optional
 
@@ -45,3 +46,13 @@ class LoanRequestInDb(SQLModel, table=True):
 
     # Relation pour lier une demande de prêt à un utilisateur
     user: UserInDb = Relationship(back_populates="loans")
+    
+#______________________________________________________________________________
+#
+# region TokenInDB : white list de token valides
+#______________________________________________________________________________
+class TokenInDB(SQLModel, table=True):
+    __tablename__ = "valid_tokens"
+    id: int = Field(default=None, primary_key=True)
+    expires : datetime = Field()
+    token : str = Field()
