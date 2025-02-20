@@ -4,9 +4,9 @@ from typing import List, Optional
 
 #______________________________________________________________________________
 #
-# region User : référence de la base de données
+# region UserInDB : l'objet User tel qu'il est stocké dans la base de données
 #______________________________________________________________________________
-class User(SQLModel, table=True):
+class UserInDb(SQLModel, table=True):
     """
         id: Identifiant unique de l'utilisateur.
         username .. ajouté
@@ -20,32 +20,22 @@ class User(SQLModel, table=True):
     __tablename__ = "users"
 
     id: int = Field(default=None, primary_key=True)
-    username : str = Field(default="rien", nullable=True)
+    username : str = Field(default="Vous", nullable=True)
     email: str = Field(unique=True, index=True, nullable=False)
     password_hash: str
     role: str = Field(default="user", nullable=False)
     is_active: bool = Field(default=False)
     
     # Relation pour lier les demandes de prêt à un utilisateur
-    loans: List["LoanRequest"] = Relationship(back_populates="user")
+    loans: List["LoanRequestInDb"] = Relationship(back_populates="user")
 
-    def set_password(self, password: str):
-        """
-        set_password: Utilise passlib pour hacher le mot de passe avant de le stocker.
-        """
-        self.password_hash = CryptContext(schemes=["bcrypt"]).hash(password)
 
-    def verify_password(self, password: str) -> bool:
-        """
-        Vérifie si le mot de passe fourni correspond à celui stocké dans la base de données.
-        """
-        return CryptContext(schemes=["bcrypt"]).verify(password, self.password_hash)
 
 #______________________________________________________________________________
 #
-# region LoanRequest : référence de la base de données
+# region LoanRequestInDb : l'objet LoanRequest tel qu'il est stocké dans la base de données
 #______________________________________________________________________________
-class LoanRequest(SQLModel, table=True):
+class LoanRequestInDb(SQLModel, table=True):
     __tablename__ = "loan_requests"
 
     id: int = Field(default=None, primary_key=True)
@@ -54,4 +44,4 @@ class LoanRequest(SQLModel, table=True):
     status: str = Field(default="pending", nullable=False)
 
     # Relation pour lier une demande de prêt à un utilisateur
-    user: User = Relationship(back_populates="loans")
+    user: UserInDb = Relationship(back_populates="loans")

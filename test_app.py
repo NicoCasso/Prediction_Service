@@ -4,9 +4,10 @@ from fastapi.security import OAuth2PasswordBearer
 
 from endpoints import auth, loans, admin
 
-from dependencies import get_current_admin, get_current_user, verify_token
-from db_session_provider import get_db_session
-import init_user 
+from utils.jwt_handlers import get_current_admin, get_current_user, verify_token
+from db.session_provider import get_db_session
+import core.password_management as pm
+import populate_db as populate_db 
 
 # Créer une instance de l'application FastAPI
 app = FastAPI()
@@ -22,7 +23,7 @@ app.include_router(admin.router)
 
 client = TestClient(app)
 
-users = init_user.users
+users = populate_db.users_list
 admin_user = users[0]
 client_user_1 = users[1]
 client_user_2 = users[2]
@@ -41,12 +42,13 @@ def test_login_OK():
     assert "access_token" in response.json()
 
 def get_login_response(user) :
-    # Envoie une requête POST pour se connecter et obtenir un token d'accès
-    response = client.post("/auth/login",
-        json= {
-            "email": admin_user["email"],
-            "password": admin_user["password"]
-        })
+    
+    payload = {
+        "username": str(admin_user["email"]),
+        "password": str(admin_user["password"])
+    }
+
+    response = client.post("/auth/login", data = payload)
     return response
     
 def get_token(loginresponse):

@@ -1,16 +1,23 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
 from datetime import timedelta
-from models import User
-from validation_models import UserConnectionData, Token
-from dependencies import create_access_token, verify_token, get_current_user
-from db_session_provider import get_db_session
-from config import ACCESS_TOKEN_EXPIRE_MINUTES
+import core.password_management as pm
+from schemas.auth_data import Token, AuthData
+from schemas.users_data import UserBaseData
+from models.models import UserInDb
+from utils.jwt_handlers import create_access_token, verify_token, get_current_user
+from db.session_provider import get_db_session
+from core.config import ACCESS_TOKEN_EXPIRE_MINUTES
 
 
 router = APIRouter()
+
+#login_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+activation_scheme = OAuth2PasswordBearer(tokenUrl="/auth/activation")
+logout_scheme = OAuth2PasswordBearer(tokenUrl="/auth/logout")
 
 #______________________________________________________________________________
 #
@@ -18,24 +25,32 @@ router = APIRouter()
 #______________________________________________________________________________
 @router.post("/auth/login", response_model=Token)
 def login_for_access_token(
-    connection_data: UserConnectionData, 
-    session: Session = Depends(get_db_session)) -> Token:
+    auth_data: AuthData, 
+    db_session: Session = Depends(get_db_session)) -> Token:
+    """
+    Connexion à l'API 'Prediction Service' et récupération du jeton d'authentification
+    """
+    unauthorised_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Incorrect email or password",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
 
     # Cherche l'utilisateur dans la base de données par son email
-    user = session.query(User).filter(User.email == connection_data.email).first()
+    db_user = db_session.query(UserInDb).filter(UserInDb.email == auth_data.email).first()
 
     # Vérifie si l'utilisateur existe et si le mot de passe est valide
-    if not user or not user.verify_password(connection_data.password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
+    if not db_user :
+        raise unauthorised_exception
+    
+    if not pm.verify_password(auth_data.password, db_user.password_hash):
+        raise unauthorised_exception
+         
     # Si l'utilisateur existe et que le mot de passe est valide, créer un token d'accès
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token_expires = timedelta(minutes = ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user.email, "role": user.role}, expires_delta=access_token_expires
+        data={"sub": db_user.email, "id" : db_user.id}, 
+        expires_delta=access_token_expires
     )
 
     # Retourne le token d'accès et le type de token
@@ -47,31 +62,19 @@ def login_for_access_token(
 #______________________________________________________________________________
 @router.post("/auth/activation")
 def activate_account(
-    user: UserConnectionData, 
-    token: str = Depends(verify_token), 
-    session: Session = Depends(get_db_session)):
+    user_data: UserBaseData, 
+    token: str = Depends(activation_scheme), 
+    db_session: Session = Depends(get_db_session)):
+    """
+    Activation du compte et changement du mot de passe
+    """
+    payload = verify_token(token)
+    db_user = get_current_user(payload, db_session)
     
-    # Récupère l'utilisateur actuel en fonction du token
-    current_user = get_current_user(token)
-
-    # Vérifie si le nom d'utilisateur dans le token correspond à celui fourni dans la requête
-    if current_user.email != user.email:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized")
-
-    # Recherche l'utilisateur dans la base de données par email
-    db_user = session.query(User).filter(User.email == user.email).first()
-    if not db_user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    
-    # Mise à jour du mot de passe de l'utilisateur
-    db_user.set_password(user.password)  # Met à jour le mot de passe (il est haché)
-
-    # Activer le compte de l'utilisateur
+    db_user.password_hash = pm.get_password_hash(user_data.password)
     db_user.is_active = True
-    
-    # Enregistrer les modifications dans la base de données
-    session.commit()
-    session.refresh(db_user)
+    db_session.commit()
+    db_session.refresh(db_user)
 
     # Retourne un message de confirmation
     return {"msg": "Account activated and password updated successfully."}
@@ -81,7 +84,19 @@ def activate_account(
 # region Déconnexion
 #______________________________________________________________________________
 @router.post("/auth/logout")
-def logout(token: str = Depends(verify_token)):
+def logout(
+    token: str = Depends(logout_scheme),
+    db_session: Session = Depends(get_db_session)):
+    """
+    Déconnexion de l'API 'Prediction Service'
+    """
+
+    payload = verify_token(token)
+    db_user = get_current_user(payload)
+
+    if not db_user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
     return {"msg": "Logged out successfully. Token is invalidated."}
 
 
