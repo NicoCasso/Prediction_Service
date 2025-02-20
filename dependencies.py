@@ -1,10 +1,10 @@
 from fastapi import HTTPException, Depends
 from jose import JWTError, jwt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from sqlalchemy.orm import Session
-from models import User
+from alembic.models.endpoints.user import User
 from config import ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
 from db_session_provider import get_db_session
 
@@ -18,7 +18,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-def verify_token(token: str):
+def verify_token(token: str Depends):
     credentials_exception = HTTPException(
         status_code=401,
         detail="Could not validate credentials",

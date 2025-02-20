@@ -23,8 +23,8 @@ from config import DATABASE_URL
 #
 # import des données du modèle pour Alembic
 #______________________________________________________________________________
-from models import User, LoanRequest 
-from models import User, LoanRequest  # Assure-toi que le chemin vers models est correct
+from alembic.models.endpoints.user import User, LoanRequest 
+from alembic.models.endpoints.user import User, LoanRequest  # Assure-toi que le chemin vers models est correct
 
 #______________________________________________________________________________
 #
