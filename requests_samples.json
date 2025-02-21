@@ -1,0 +1,48 @@
+// POST -> auth/login
+{ 
+    "email" : "nicolas.cassonnet@wanadoo.fr", 
+    "password" : "nicolas.cassonnet@wanadoo.fr" 
+}
+
+// POST -> auth/activation
+{ 
+    "email" : "user1.fakemail@fakeprovider.com",
+    "old_password" : "initialpass1",
+    "new_password" : "otherpass1"
+}
+
+// POST -> auth/logout
+
+
+
+// POST _-> loans/request
+{ 
+    "state" : "OH",
+    "bank" : "CAPITAL ONE NATL ASSOC",
+    "naics" : 54, 
+    "term": 60,
+    "no_emp": 13,
+    "new_exist": true, 
+    "create_job": 0,
+    "retained_job": 3,
+    "urban_rural": 2,
+    "rev_line_cr": false,
+    "low_doc": false,
+    "gr_appv": 5000,
+    "recession": false,
+    "has_franchise": true
+}
+
+// POST > admin/users
+{ 
+    "email" : "user3.fakemail@fakeprovider.com",
+    "username" : "User3", 
+    "role" : "user",
+    "password" : "initialpass3",
+}
+
+
+
+
+
+ 

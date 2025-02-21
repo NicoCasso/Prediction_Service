@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from typing import Optional
 
 #______________________________________________________________________________
@@ -9,7 +9,7 @@ class UserActivationData(BaseModel):
     """
     User activation Data
     """
-    email: EmailStr
+    email: str
     is_active : bool
     new_password : str
 
@@ -21,7 +21,7 @@ class UserInfoData(BaseModel):
     """
     User information data 
     """
-    email: EmailStr
+    email: str
     username : Optional [str] = None
     is_active : bool
     role: str = "user"

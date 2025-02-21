@@ -4,31 +4,31 @@ from pydantic import BaseModel
 # region Loan request Data
 #______________________________________________________________________________
 class LoanRequestData(BaseModel):
-    amount: int
-    term : int
+    state : str
+    bank : str
+    naics : int
+    term : int 
+    no_emp : int 
+    new_exist : bool 
+    create_job : int 
+    retained_job: int 
+    urban_rural: int 
+    rev_line_cr: bool 
+    low_doc : bool 
+    gr_appv: int 
+    recession: bool 
+    has_franchise: bool 
 
 #______________________________________________________________________________
 #
 # region Loan response Data
 #______________________________________________________________________________
 class LoanResponseData(BaseModel):
-    amount: int
-    prediction : str
-
-#______________________________________________________________________________
-#
-# region Loan predict Data
-#______________________________________________________________________________
-class LoanPredictData(BaseModel):
-    amount: int
-    something : str
+    mis_status : str
 
 #______________________________________________________________________________
 #
 # region Loan info Data
 #______________________________________________________________________________
-class LoanInfoData(BaseModel):
-    amount: int
-    term : int
-    something : str
-    prediction : str
+class LoanInfoData(LoanRequestData):
+    mis_status : str

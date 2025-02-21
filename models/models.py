@@ -39,10 +39,27 @@ class UserInDb(SQLModel, table=True):
 class LoanRequestInDb(SQLModel, table=True):
     __tablename__ = "loan_requests"
 
-    id: int = Field(default=None, primary_key=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
     user_id: int = Field(default=None, foreign_key="users.id")
-    amount: float = Field(..., nullable=False)
-    status: str = Field(default="pending", nullable=False)
+
+    # request fields
+    state : str = Field()
+    bank : str = Field()
+    naics : int = Field()
+    term : int = Field()
+    no_emp : int = Field()
+    new_exist : bool = Field()
+    create_job : int = Field()
+    retained_job: int = Field()
+    urban_rural: int = Field()
+    rev_line_cr: bool = Field()
+    low_doc : bool = Field()
+    gr_appv: int = Field()
+    recession: bool = Field()
+    has_franchise: bool = Field()
+    
+    #request status
+    mis_status: Optional[str] = Field(default=None)
 
     # Relation pour lier une demande de prêt à un utilisateur
     user: UserInDb = Relationship(back_populates="loans")
