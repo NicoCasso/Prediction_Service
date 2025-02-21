@@ -7,13 +7,13 @@ class Loanpredict(BaseModel):
     NAICS : int
     Term : int
     NoEmp : int
-    NewExist : bool
+    NewExist : int
     CreateJob : int
     RetainedJob: int
     UrbanRural: int
-    RevLineCr: bool
-    LowDoc: bool
+    RevLineCr: int
+    LowDoc: int
     GrAppv: int
-    Recession: bool
-    HasFranchise: bool
+    Recession: int
+    HasFranchise: int
 
