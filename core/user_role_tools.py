@@ -18,7 +18,7 @@ def get_current_user(payload, db_session : Session, need_activated_user:bool = T
     # statement = select(UserInDb).where(UserInDb.id == data_id)
     # user = db_session.exec(statement).one_or_none()
 
-    user = db_session.query(UserInDb).filter(UserInDb.id == data_id)
+    user = db_session.query(UserInDb).filter(UserInDb.id == data_id).first()
 
     raise_user_exceptions(need_activated_user, user)
     
