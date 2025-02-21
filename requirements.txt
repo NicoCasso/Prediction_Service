@@ -9,4 +9,6 @@ alembic==1.14.1
 PyJWT==2.10.1
 passlib[bcrypt]
 
+httpx==0.28.1
+
 dotenv==0.9.9

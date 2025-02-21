@@ -2,12 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 #from sqlmodel import Session, select
 from sqlalchemy.orm import Session
+from typing import List
 
 # application imports
 from core.user_role_tools import get_current_user
 from db.session_provider import get_db_session
 from db.token_white_list import register_token, is_valid_token, invalidate_token
 from models.models import LoanRequestInDb
+from schemas.loans_data import LoanRequestData,LoanResponseData, LoanPredictData, LoanInfoData
 from utils.jwt_handlers import verify_token
 
 
@@ -27,10 +29,10 @@ unauthorised_exception = HTTPException(
 #
 # region Prédiction d'éligibilité à un prêt
 #______________________________________________________________________________
-@router.get("/loans/predict")
+@router.get("/loans/predict") #, response_model=LoanPredictData)
 def predict_loan_eligibility(
     token: str = Depends(predict_scheme), 
-    db_session: Session = Depends(get_db_session) ):
+    db_session: Session = Depends(get_db_session) ) : # -> LoanPredictData: 
     """
     Prédiction d'éligibilité à un prêt
     """
@@ -39,7 +41,7 @@ def predict_loan_eligibility(
         raise unauthorised_exception
 
     payload = verify_token(token)
-    current_user = get_current_user(token)
+    current_user = get_current_user(payload, db_session)
 
     # Logique de prédiction (ex. basée sur des informations utilisateur dans la base de données)
     eligibility = "Eligible"  # Juste un exemple de retour
@@ -49,11 +51,11 @@ def predict_loan_eligibility(
 #
 # region Soumission d'une demande de prêt
 #______________________________________________________________________________
-@router.post("/loans/request")
+@router.post("/loans/request") #, response_model=LoanResponseData)
 def request_loan(
-    loan_request: dict, 
+    loan_request: LoanRequestData, 
     token: str = Depends(request_scheme), 
-    db_session: Session = Depends(get_db_session)):
+    db_session: Session = Depends(get_db_session)) : # -> LoanResponseData:
     """
     Soumission d'une demande de prêt
     """
@@ -62,7 +64,7 @@ def request_loan(
         raise unauthorised_exception
     
     payload = verify_token(token)
-    current_user = get_current_user(token)
+    current_user = get_current_user(payload, db_session)
 
     new_loan = LoanRequestInDb(user_id=current_user.id, **loan_request)
     db_session.add(new_loan)
@@ -76,10 +78,10 @@ def request_loan(
 #
 # region Historique des demandes de prêt
 #______________________________________________________________________________
-@router.get("/loans/history")
+@router.get("/loans/history") #, response_model=List[LoanInfoData])
 def loan_history(
     token: str = Depends(history_scheme), 
-    db_session: Session = Depends(get_db_session)):
+    db_session: Session = Depends(get_db_session)) : # -> list[LoanInfoData]:
     """
     Historique des demandes de prêt
     """

@@ -13,7 +13,7 @@ from db.token_white_list import register_token, is_valid_token, invalidate_token
 from db.session_provider import get_db_session
 from models.models import UserInDb
 from schemas.auth_data import Token, AuthData
-from schemas.users_data import UserBaseData
+from schemas.users_data import UserActivationData
 from utils.jwt_handlers import create_access_token, verify_token
 
 
@@ -79,7 +79,7 @@ def login_for_access_token(
 #______________________________________________________________________________
 @router.post("/auth/activation")
 def activate_account(
-    user_data: UserBaseData, 
+    user_data: UserActivationData, 
     token: str = Depends(activation_scheme), 
     db_session: Session = Depends(get_db_session)):
     """
