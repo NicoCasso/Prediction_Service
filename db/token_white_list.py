@@ -58,6 +58,7 @@ def clean_tokens(db_session: Session) :
             db_session.delete(db_token)
 
     db_session.commit()
+    #db_session.refresh()
 
 
     
