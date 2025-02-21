@@ -50,7 +50,7 @@ def populate_with_users(users_data : list[UserCreationData]) :
             # statement = select(UserInDb).where(UserInDb.email==user_data.email)
             # result = db_session.exec(statement).one_or_none()
 
-            result = db_session.query(UserInDb).filter(UserInDb.email==user_data.email)
+            result = db_session.query(UserInDb).filter(UserInDb.email==user_data.email).first()
 
 
             if not result :

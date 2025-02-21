@@ -48,15 +48,15 @@ class LoanRequestInDb(SQLModel, table=True):
     naics : int = Field()
     term : int = Field()
     no_emp : int = Field()
-    new_exist : bool = Field()
+    new_exist : int = Field() # bool 
     create_job : int = Field()
     retained_job: int = Field()
     urban_rural: int = Field()
-    rev_line_cr: bool = Field()
-    low_doc : bool = Field()
+    rev_line_cr: int = Field() # bool 
+    low_doc : int = Field() # bool 
     gr_appv: int = Field()
-    recession: bool = Field()
-    has_franchise: bool = Field()
+    recession: int = Field() # bool 
+    has_franchise: int = Field() # bool 
     
     #request status
     approval_status: Optional[str] = Field(default=None)

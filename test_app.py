@@ -10,9 +10,13 @@ from core.password_tools import verify_password
 from db.session_provider import get_db_session
 from schemas.auth_data import AuthData
 from schemas.users_data import UserActivationData, UserInfoData, UserCreationData
-from schemas.loans_data import LoanRequestData, LoanResponseData, LoanPredictData, LoanInfoData
+from schemas.loans_data import LoanRequestData, LoanResponseData, LoanInfoData
 
 import populate_db as populate_db 
+
+import json
+from typing import List
+import random
 
 # Créer une instance de l'application FastAPI
 app = FastAPI()
@@ -40,20 +44,21 @@ client_user_2 = users[2]
 def test_login():
     """Test pour obtenir un token d'accès valide"""
 
-    user = admin_user
-    response = get_login_response(admin_user)
+    user_data = admin_user
+    response = get_login_response(user_data)
 
     if response.status_code == 200 :
         print ("test_login : OK")
+        print (response.json().get("access_token"))
     else : 
         print ("test_login : errors / ko")
-    #assert "access_token" in response.json()
+        
 
-def get_login_response(user) :
+def get_login_response(user_data : UserCreationData) :
     
     auth_data = AuthData(
-        email=admin_user.email, 
-        password=admin_user.password)
+        email=user_data.email, 
+        password=user_data.password)
     
     response = client.post("/auth/login", data = auth_data.model_dump_json())
     return response
@@ -101,7 +106,7 @@ def test_activation():
 
 #______________________________________________________________________________
 #
-# region 3 : auth logout
+# region auth logout
 #______________________________________________________________________________
 def test_logout():
 
@@ -118,6 +123,7 @@ def test_logout():
 
     if response.status_code == 200 :
         print ("test_logout: OK")
+        print(response.json())
     else : 
         print ("test_logout : errors / ko")
 
@@ -125,30 +131,7 @@ def test_logout():
 
 #______________________________________________________________________________
 #
-# region 4 : loans predict
-#______________________________________________________________________________
-def test_loans_predict():
-
-    user_login_response = get_login_response(client_user_1)
-    jwt_token = get_token(user_login_response)
-    headers = get_headers(jwt_token)
-
-    # Appel à la route de prédiction d'éligibilité
-    response = client.get(
-        "/loans/predict", 
-        headers=headers)
-
-    # Vérifications
-    if response.status_code == 200 :
-        print ("test_loans_predict: OK")
-    else : 
-        print ("test_loans_predict : errors / ko")
-
-    #assert response.json() == {"eligibility": "Eligible"}  # Vérifie que l'éligibilité est "Eligible"
-
-#______________________________________________________________________________
-#
-# region 5 : loans request
+# region 3 : loans request
 #______________________________________________________________________________
 def test_loans_request():
 
@@ -158,8 +141,20 @@ def test_loans_request():
 
     # Données de la demande de prêt
     loan_request_data = LoanRequestData(
-        amount = 100000, 
-        term=12
+        state = loan_request_data.state,
+        bank = loan_request_data.bank,
+        naics = loan_request_data.naics,
+        term = loan_request_data.term,
+        no_emp = loan_request_data.no_emp,
+        new_exist = loan_request_data.new_exist,
+        create_job = loan_request_data.create_job,
+        retained_job = loan_request_data.create_job,
+        urban_rural = loan_request_data.urban_rural,
+        rev_line_cr= loan_request_data.rev_line_cr,
+        low_doc = loan_request_data.low_doc,
+        gr_appv = loan_request_data.gr_appv,
+        recession = loan_request_data.recession,
+        has_franchise = loan_request_data.has_franchise
     )
 
     # Appel à la route de soumission de la demande de prêt
@@ -179,7 +174,7 @@ def test_loans_request():
 
 #______________________________________________________________________________
 #
-# region 6 : loans history
+# region 4 : loans history
 #______________________________________________________________________________
 def test_loans_history():
 
@@ -205,7 +200,7 @@ def test_loans_history():
 
 #______________________________________________________________________________
 #
-# region 7 : admin users
+# region 5 : admin users
 #______________________________________________________________________________
 def test_get_users():
 
@@ -224,51 +219,66 @@ def test_get_users():
     else : 
         print ("test_get_users : errors / ko")
     
-    # assert "users" in response.json()
-    # assert len(response.json()["users"]) == len(users)
-    # assert response.json()["users"][1]["email"] == client_user_1["email"]
+    users = []
+    try : 
+        json_data = response.json()
+        users : List[UserInfoData] = [UserInfoData.model_validate(user_data) for user_data in json_data]
+    except:
+        pass
+    
+    for user in users : 
+        print(user)
 
 #______________________________________________________________________________
 #
-# region 8 : create_user
+# region 6 : create_user
 #______________________________________________________________________________
 def test_create_user():
     
     admin_login_response = get_login_response(admin_user)
     jwt_token = get_token(admin_login_response)
     headers = get_headers(jwt_token)
+    
+    n = str(random.randint(3, 99))
 
     # Données utilisateur à envoyer
     user_data = UserCreationData(
-        email = "user3.fakemail@fakeprovider.com",
-        username="User3", 
+        email = f"user{n}.fakemail@fakeprovider.com",
+        username=f"User{n}", 
         is_active=False,
         role = "user",
-        password= "initialpass3")
+        password= f"initialpass{n}")
     
     users.append(user_data)
 
     # Simuler l'appel à la route de création d'utilisateur
     response = client.post(
         "/admin/users", 
-        data=user_data,
-        headers=headers)
+        data = user_data.model_dump_json(),
+        headers = headers)
 
     # Vérifications
     if response.status_code == 200 :
         print ("test_create_user : OK")
+        print(response.json())
     else : 
         print ("test_create_user : errors / ko")
 
     #assert response.json()["email"] == user_data["email"]
 
 if __name__ == "__main__" :
-    test_login()
-    test_get_users()
-    test_create_user()
-    test_activation()
-    test_loans_predict()
-    test_loans_history()
-    test_loans_request()
-    test_logout()
+
+    tests = []
+    tests.append(test_login)
+    tests.append(test_get_users)
+    tests.append(test_create_user)
+    tests.append(test_activation)
+    tests.append(test_loans_history)
+    tests.append(test_loans_request)
+    tests.append(test_logout)
+
+    print("_________________________________________________________")
+    for test in tests:
+        test()
+        print("_________________________________________________________")
 

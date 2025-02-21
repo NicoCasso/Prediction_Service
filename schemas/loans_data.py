@@ -13,15 +13,15 @@ class LoanRequestData(BaseModel):
     naics : int = Field(description = "North American industry classiﬁcation system code, \n first two characters")
     term : int = Field(description = "Loan term in months")
     no_emp : int = Field(description = "Number of business employees")
-    new_exist : Optional[int] = Field(description = "1 = Existing business, 2 = New business")
+    new_exist : int = Field(description = "1 = Existing business, 2 = New business") # bool 
     create_job : int = Field(description = "number of jobs created")
     retained_job: int = Field(description = "number of jobs saved")
-    urban_rural: int = Field(description = "1 = Urban, 2 = rural, 0 = undeﬁned")
-    rev_line_cr: Optional[int] = Field(description = "Revolving line of credit: 1 = Yes, 0 = No")
-    low_doc : Optional[int] = Field(description = "LowDoc Loan Program: 1 = Yes, 0 = No")
+    urban_rural: int = Field(description = "1 = Urban, 2 = rural, 0 = undeﬁned") 
+    rev_line_cr: int = Field(description = "Revolving line of credit: 1 = Yes, 0 = No")
+    low_doc : int = Field(description = "LowDoc Loan Program: 1 = Yes, 0 = No")
     gr_appv: int = Field(description = "Gross amount of loan approved by bank")
-    recession: Optional[int] = Field(description = "From December 2007 to June 2009")
-    has_franchise: Optional[int] = Field(description = "has a franchise code or not")
+    recession: int = Field(description = "From December 2007 to June 2009")
+    has_franchise: int = Field(description = "has a franchise code or not")
 
 #______________________________________________________________________________
 #
