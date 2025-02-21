@@ -70,9 +70,9 @@ def loan_request(
         retained_job= 3,
         urban_rural =2,
         rev_line_cr= 0, # = False 
-        low_doc = 0 # = False 
+        low_doc = 0, # = False 
         gr_appv = 50000,
-        recession = 0 # = False 
+        recession = 0, # = False 
         has_franchise = 1  # =True 
     )
 
