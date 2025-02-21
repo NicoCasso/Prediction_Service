@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
-from sqlalchemy.orm import sessionmaker, Session, scoped_session
-from contextlib import contextmanager
+from sqlalchemy.orm import sessionmaker, Session 
+from typing import Generator, Any
 
 #application imports
 from core.config import DATABASE_URL
@@ -9,14 +9,14 @@ from core.config import DATABASE_URL
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})  # connect_args nécessaire pour SQLite
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-session_scope = scoped_session(SessionLocal)
 
 Base: DeclarativeMeta = declarative_base()
 
-@contextmanager
-def get_db_session() -> Session:
-    db_session = session_scope()  
+def get_db_session() -> Generator[Session, Any, None]:
+    db_session = SessionLocal()
     try:
         yield db_session
     finally:
-        db_session.remove()
+        db_session.close()
+
+        

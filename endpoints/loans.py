@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+#from sqlmodel import Session, select
 from sqlalchemy.orm import Session
 
 # application imports
@@ -89,6 +90,10 @@ def loan_history(
     payload = verify_token(token)
     current_user = get_current_user(payload, db_session)
 
+    # statement = select(LoanRequestInDb).where(LoanRequestInDb.user_id == current_user.id)
+    # loan_history = db_session.exec(statement).all()
+
     loan_history = db_session.query(LoanRequestInDb).filter(LoanRequestInDb.user_id == current_user.id).all()
+
     return {"loan_history": loan_history}
 

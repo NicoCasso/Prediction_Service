@@ -1,5 +1,6 @@
 
 from fastapi import HTTPException, status
+#from sqlmodel import Session, select
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
 from typing import Optional
@@ -13,7 +14,11 @@ def get_current_user(payload, db_session : Session, need_activated_user:bool = T
     """
     data_email = payload.get("sub")
     data_id = payload.get("id")
-    user = db_session.query(UserInDb).filter(UserInDb.id == data_id).first()
+
+    # statement = select(UserInDb).where(UserInDb.id == data_id)
+    # user = db_session.exec(statement).one_or_none()
+
+    user = db_session.query(UserInDb).filter(UserInDb.id == data_id)
 
     raise_user_exceptions(need_activated_user, user)
     
@@ -25,6 +30,10 @@ def get_current_admin(payload, db_session : Session, need_activated_user:bool = 
     """
     data_email = payload.get("sub")
     data_id = payload.get("id")
+
+    # statement = select(UserInDb).where(UserInDb.id == data_id)
+    # user = db_session.exec(statement).one_or_none()
+
     user = db_session.query(UserInDb).filter(UserInDb.id == data_id).first()
     
     raise_user_exceptions(need_activated_user, user)

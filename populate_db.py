@@ -1,4 +1,6 @@
-from sqlmodel import SQLModel, Field, Session, create_engine, select
+from sqlmodel import SQLModel, Field, create_engine
+#from sqlmodel import Session, select
+from sqlalchemy.orm import Session
 from core.config import DATABASE_URL
 from models.models import UserInDb
 from schemas.users_data import UserCreationData
@@ -40,20 +42,25 @@ def populate_with_users(users_data : list[UserCreationData]) :
     engine = create_engine(DATABASE_URL)
 
     # Ouvrir une session
-    with Session(engine) as session:
+    with Session(engine) as db_session:
         # Sélection de chaque utilisateur à ajouter
         
         for user_data in users_data :
-            statement = select(UserInDb).where(UserInDb.email==user_data.email)
-            result = session.exec(statement).one_or_none()
+
+            # statement = select(UserInDb).where(UserInDb.email==user_data.email)
+            # result = db_session.exec(statement).one_or_none()
+
+            result = db_session.query(UserInDb).filter(UserInDb.email==user_data.email)
+
+
             if not result :
                 new_user= UserInDb(email=user_data.email)
                 new_user.username = user_data.username
                 new_user.password_hash = get_password_hash(user_data.password)
                 new_user.role = user_data.role
                 new_user.is_active = user_data.is_active
-                session.add(new_user)
-                session.commit()
+                db_session.add(new_user)
+                db_session.commit()
 
     print("done")
 

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+#from sqlmodel import Session, select
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from datetime import timedelta
@@ -48,6 +49,9 @@ def login_for_access_token(
     )
 
     # Cherche l'utilisateur dans la base de données par son email
+    # statement = select(UserInDb).where(UserInDb.email == auth_data.email)
+    # db_user = db_session.exec(statement).one_or_none()
+
     db_user = db_session.query(UserInDb).filter(UserInDb.email == auth_data.email).first()
 
     # Vérifie si l'utilisateur existe et si le mot de passe est valide

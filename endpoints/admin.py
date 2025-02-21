@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+#from sqlmodel import Session, select
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -38,6 +39,9 @@ def get_users(
     payload = verify_token(token)
     db_admin = get_current_admin(payload, db_session)
 
+    # statement = select(UserInDb)
+    # db_users = db_session.exec(statement).all()
+
     db_users = db_session.query(UserInDb).all()
 
     users_data = []
@@ -71,7 +75,7 @@ def create_user(
     if creation_data.role not in ["admin", "user"] :
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="ce rôle n'existe pas ")
+            detail="Role does not exist")
     
     db_user = UserInDb(email=creation_data.email)
     db_user.username = creation_data.username
