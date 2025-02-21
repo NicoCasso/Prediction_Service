@@ -91,13 +91,10 @@ def activate_account(
 
     payload = verify_token(token)
     db_user = get_current_user(payload, db_session, need_activated_user=False)
+    db_user.is_active = True
+    db_user.password_hash = get_password_hash(user_data.new_password)
     
-    if not db_user.is_active :
-        db_user.password_hash = get_password_hash(user_data.password)
-        db_user.is_active = True
-    else :
-        db_user.is_active = user_data.is_active
-        
+    db_session.add(db_user)
     db_session.commit()
     db_session.refresh(db_user)
 

@@ -4,10 +4,13 @@
     "password" : "nicolas.cassonnet@wanadoo.fr" 
 }
 
-// POST -> auth/activation
 { 
-    "email" : "user1.fakemail@fakeprovider.com",
-    "old_password" : "initialpass1",
+    "email" : "user1.fakemail@fakeprovider.com", 
+    "password" : "otherpass1" 
+}
+
+// POST -> auth/activation connected as "user1.fakemail@fakeprovider.com"
+{ 
     "new_password" : "otherpass1"
 }
 

@@ -9,8 +9,6 @@ class UserActivationData(BaseModel):
     """
     User activation Data
     """
-    email: str
-    is_active : bool
     new_password : str
 
 #______________________________________________________________________________

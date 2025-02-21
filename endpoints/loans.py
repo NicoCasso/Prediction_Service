@@ -28,15 +28,30 @@ unauthorised_exception = HTTPException(
 
 #______________________________________________________________________________
 #
-# region Soumission d'une demande de prêt
+# region loan_request
 #______________________________________________________________________________
 @router.post("/loans/request", response_model=LoanResponseData)
-def request_loan(
+def loan_request(
     loan_request_data: LoanRequestData, 
     token: str = Depends(request_scheme), 
     db_session: Session = Depends(get_db_session)) -> LoanResponseData:
     """
-    Soumission d'une demande de prêt
+    Soumet une demande de prêt en enregistrant les informations de la requête
+    dans la base de données et en retournant le statut d'approbation du prêt.
+    
+    Cette méthode prend en entrée les données d'une demande de prêt, vérifie
+    l'authenticité du token utilisateur, et effectue une prédiction concernant 
+    l'approbation du prêt. Après traitement, elle retourne le statut d'approbation.
+
+    ### Paramètres :
+    - `loan_request_data` (LoanRequestData) : Données de la demande de prêt envoyées par l'utilisateur. Contient 
+      des informations telles que le type d'entreprise, le montant du prêt, etc.
+    - `token` (str) : Token d'authentification utilisé pour vérifier l'utilisateur effectuant la demande. 
+    ### Réponse :
+    - Retourne un objet `LoanResponseData` avec le statut d'approbation de la demande de prêt.
+    
+    ### Code d'erreur :
+        Erreurs : 401 Unauthorized, 404 Not found
     """
     if not is_valid_token(token, db_session) :
         raise unauthorised_exception
@@ -66,26 +81,26 @@ def request_loan(
     db_session.refresh(new_loan)
 
     fake_model = FakeModel(new_loan)
-    predicted = fake_model.predict_mis_status()
+    predicted = fake_model.predict_approval_status()
 
-    new_loan.mis_status = predicted
+    new_loan.approval_status = predicted
     db_session.add(new_loan)
     db_session.commit()
 
     # db_session.refresh(new_loan)
 
-    response_data = LoanResponseData(mis_status=predicted)
+    response_data = LoanResponseData(approval_status=predicted)
     
     return response_data
 
 #______________________________________________________________________________
 #
-# region Historique des demandes de prêt
+# region loan_history 
 #______________________________________________________________________________
-@router.get("/loans/history") #, response_model=List[LoanInfoData])
+@router.get("/loans/history", response_model=List[LoanInfoData])
 def loan_history(
     token: str = Depends(history_scheme), 
-    db_session: Session = Depends(get_db_session)) : # -> list[LoanInfoData]:
+    db_session: Session = Depends(get_db_session))  -> list[LoanInfoData]:
     """
     Historique des demandes de prêt
     """
@@ -99,7 +114,34 @@ def loan_history(
     # statement = select(LoanRequestInDb).where(LoanRequestInDb.user_id == current_user.id)
     # loan_history = db_session.exec(statement).all()
 
-    loan_history = db_session.query(LoanRequestInDb).filter(LoanRequestInDb.user_id == current_user.id).all()
+    if current_user.role == "admin" :
+        loan_history = db_session.query(LoanRequestInDb).all()
+    else :
+        loan_history = db_session.query(LoanRequestInDb).filter(LoanRequestInDb.user_id == current_user.id).all()
 
-    return {"loan_history": loan_history}
+    return_value = []
+    for single_loan in loan_history :
+        return_value.append( 
+            LoanInfoData(
+                user_id = current_user.id, 
+                state = single_loan.state,
+                bank = single_loan.bank,
+                naics = single_loan.naics,
+                term = single_loan.term,
+                no_emp = single_loan.no_emp,
+                new_exist = single_loan.new_exist,
+                create_job = single_loan.create_job,
+                retained_job = single_loan.create_job,
+                urban_rural = single_loan.urban_rural,
+                rev_line_cr= single_loan.rev_line_cr,
+                low_doc = single_loan.low_doc,
+                gr_appv = single_loan.gr_appv,
+                recession = single_loan.recession,
+                has_franchise = single_loan.has_franchise, 
+                approval_status=single_loan.approval_status)
+        )
+
+    loan_list : list[LoanInfoData] = return_value
+
+    return loan_list
 

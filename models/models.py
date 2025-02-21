@@ -59,7 +59,7 @@ class LoanRequestInDb(SQLModel, table=True):
     has_franchise: bool = Field()
     
     #request status
-    mis_status: Optional[str] = Field(default=None)
+    approval_status: Optional[str] = Field(default=None)
 
     # Relation pour lier une demande de prêt à un utilisateur
     user: UserInDb = Relationship(back_populates="loans")
