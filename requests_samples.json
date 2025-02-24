@@ -18,7 +18,7 @@
 
 
 
-// POST _-> loans/request
+// Approved POST -> loans/request
 { 
     "state" : "OH",
     "bank" : "CAPITAL ONE NATL ASSOC",
@@ -34,6 +34,24 @@
     "gr_appv": 50000,
     "recession": 0, // false,
     "has_franchise": 1 // true
+}
+
+// Not approved POST -> loans/request
+{ 
+    "state" : "OH",
+    "bank" : "CAPITAL ONE NATL ASSOC",
+    "naics" : 54, 
+    "term": 24,
+    "no_emp": 1,
+    "new_exist": 0, //false, 
+    "create_job": 0,
+    "retained_job": 30,
+    "urban_rural": 1,
+    "rev_line_cr": 1, //true,
+    "low_doc": 1, //true,
+    "gr_appv": 1000.0,
+    "recession": 1, // false,
+    "has_franchise": 0 // false
 }
 
 // POST > admin/users

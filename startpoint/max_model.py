@@ -1,19 +1,26 @@
 from models.models import LoanRequestInDb
-#from catboost import CatBoostClassifier
+from catboost import CatBoostClassifier
 import pickle 
 
 class MaxModel : 
+    
     def __init__(self, loan_data : LoanRequestInDb):
         self.loan_data = loan_data
+        self.result_dico = {
+            0 : "Not approved",
+            1 : "Approved"
+        }
     
-    def predict(self) :
+    def predict_approval_status(self) :
         with open("startpoint/cat_boost_model.pkl", "rb") as f:
             max_model = pickle.load(f)
+
+        max_model : CatBoostClassifier = max_model
     
         features = [
             [self.loan_data.state,
             self.loan_data.bank,
-            self.loan_data.naics,
+            str(self.loan_data.naics),
             self.loan_data.term,
             self.loan_data.no_emp,
             self.loan_data.new_exist,
@@ -27,7 +34,12 @@ class MaxModel :
             self.loan_data.has_franchise]
         ]
 
-        resultat = max_model.predict(features)
-
-        return resultat
+        result = max_model.predict(features)
+        
+        #useless_data = result[1]
+        useful_data = result[0]
+        match useful_data :
+            case 0 : return self.result_dico[0]
+            case 1 : return self.result_dico[1]
+            case _ : return "Strange result"
 

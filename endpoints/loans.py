@@ -12,6 +12,7 @@ from models.models import LoanRequestInDb
 from schemas.loans_data import LoanRequestData, LoanResponseData, LoanInfoData
 from utils.jwt_handlers import verify_token
 from utils.fake_model import FakeModel
+from startpoint.max_model import MaxModel
 
 
 router = APIRouter()
@@ -59,39 +60,64 @@ def loan_request(
     payload = verify_token(token)
     current_user = get_current_user(payload, db_session)
 
-    new_loan = LoanRequestInDb(
-        state = "OH",
-        bank = "CAPITAL ONE NATL ASSOC",
-        naics = 54, 
-        term= 60,
-        no_emp = 13,
-        new_exist = 1, # =True 
-        create_job = 0,
-        retained_job= 3,
-        urban_rural =2,
-        rev_line_cr= 0, # = False 
-        low_doc = 0, # = False 
-        gr_appv = 50000,
-        recession = 0, # = False 
-        has_franchise = 1  # =True 
+    # new_loan = LoanRequestInDb(
+    #     state = "OH",
+    #     bank = "CAPITAL ONE NATL ASSOC",
+    #     naics = 54, 
+    #     term= 60,
+    #     no_emp = 13,
+    #     new_exist = 1, # =True 
+    #     create_job = 0,
+    #     retained_job= 3,
+    #     urban_rural =2,
+    #     rev_line_cr= 0, # = False 
+    #     low_doc = 0, # = False 
+    #     gr_appv = 50000,
+    #     recession = 0, # = False 
+    #     has_franchise = 1  # =True 
+    # )
+
+    db_data = LoanRequestInDb(
+        user_id = current_user.id,
+        state = loan_request_data.state,
+        bank = loan_request_data.bank,
+        naics = loan_request_data.naics,
+        term= loan_request_data.term,
+        no_emp = loan_request_data.no_emp,
+        new_exist = loan_request_data.new_exist, # = bool 
+        create_job = loan_request_data.create_job,
+        retained_job= loan_request_data.retained_job,
+        urban_rural =loan_request_data.urban_rural,
+        rev_line_cr= loan_request_data.rev_line_cr, # = bool 
+        low_doc = loan_request_data.low_doc, # = bool 
+        gr_appv = loan_request_data.gr_appv,
+        recession = loan_request_data.recession, # = bool 
+        has_franchise = loan_request_data.has_franchise, # = bool 
     )
 
-    db_session.add(new_loan)
+    db_session.add(db_data)
     db_session.commit()
-    db_session.refresh(new_loan)
+    db_session.refresh(db_data)
 
-    fake_model = FakeModel(new_loan)
-    predicted = fake_model.predict_approval_status()
-
-    new_loan.approval_status = predicted
-    db_session.add(new_loan)
-    db_session.commit()
-
-    # db_session.refresh(new_loan)
-
-    response_data = LoanResponseData(approval_status=predicted)
+    #fake_model = FakeModel(new_loan)
+    #predicted = fake_model.predict_approval_status()
+   
+    successful = False
+    loan_response_data = None
+    try:
+        max_model = MaxModel(db_data)
+        predicted = max_model.predict_approval_status()
+        successful = True
+    except Exception as ex :
+        loan_response_data = LoanResponseData(approval_status= str(ex) )
+        
+    if successful :
+        db_data.approval_status =  predicted
+        db_session.add(db_data)
+        db_session.commit()
+        loan_response_data = LoanResponseData(approval_status=predicted)
     
-    return response_data
+    return loan_response_data
 
 #______________________________________________________________________________
 #
