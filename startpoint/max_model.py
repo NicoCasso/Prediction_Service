@@ -14,7 +14,7 @@ class MaxModel :
         }
     
     def predict_approval_status(self) :
-        with open("startpoint/cat_boost_model.pkl", "rb") as f:
+        with open("startpoint/catboost_model.pkl", "rb") as f:
             max_model = pickle.load(f)
 
         max_model : CatBoostClassifier = max_model

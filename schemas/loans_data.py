@@ -35,4 +35,4 @@ class LoanResponseData(BaseModel):
 # region Loan info Data
 #______________________________________________________________________________
 class LoanInfoData(LoanRequestData):
-    approval_status : str
+    approval_status : Optional[str]

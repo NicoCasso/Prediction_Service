@@ -25,15 +25,33 @@
     "naics" : 54, 
     "term": 60,
     "no_emp": 13,
-    "new_exist": 1, //true, 
+    "new_exist": 1, 
     "create_job": 0,
     "retained_job": 3,
     "urban_rural": 2,
-    "rev_line_cr": 0, //false,
-    "low_doc": 0, //false,
-    "gr_appv": 50000, // casted in float
-    "recession": 0, // false,
-    "has_franchise": 1 // true
+    "rev_line_cr": 0, 
+    "low_doc": 0, 
+    "gr_appv": 50000, 
+    "recession": 0, 
+    "has_franchise": 1 
+}
+
+// Not approved POST -> loans/request
+{ 
+    "state" : "OH",
+    "bank" : "CAPITAL ONE NATL ASSOC",
+    "naics" : 54, 
+    "term": 6,
+    "no_emp": 13,
+    "new_exist": 1,
+    "create_job": 0,
+    "retained_job": 3,
+    "urban_rural": 2,
+    "rev_line_cr": 0, 
+    "low_doc": 0, 
+    "gr_appv": 50000, 
+    "recession": 1,
+    "has_franchise": 1 
 }
 
 // Not approved POST -> loans/request
