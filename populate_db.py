@@ -12,24 +12,21 @@ object_list.append(
         email="nicolas.cassonnet@wanadoo.fr",
         username = "Nicolas",
         password = "nicolas.cassonnet@wanadoo.fr", 
-        role = "admin",
-        is_active= True)
+        role = "admin")
 )
 object_list.append(
     UserCreationData( 
         email="user1.fakemail@fakeprovider.com",
         username = "User1",
         password = "initialpass1", 
-        role = "user",
-        is_active= False)
+        role = "user")
 )
 object_list.append(
     UserCreationData( 
         email="user2.fakemail@fakeprovider.com",
         username = "User2",
         password = "initialpass2", 
-        role = "user",
-        is_active= False)
+        role = "user")
 )
 
 # code equivalent à :
@@ -58,7 +55,7 @@ def populate_with_users(users_data : list[UserCreationData]) :
                 new_user.username = user_data.username
                 new_user.password_hash = get_password_hash(user_data.password)
                 new_user.role = user_data.role
-                new_user.is_active = user_data.is_active
+                new_user.is_active = (user_data.role == "admin")
                 db_session.add(new_user)
                 db_session.commit()
 

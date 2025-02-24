@@ -1,6 +1,5 @@
 from sqlmodel import Field, SQLModel, Relationship
 from datetime import datetime
-from passlib.context import CryptContext
 from typing import List, Optional
 
 #______________________________________________________________________________

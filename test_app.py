@@ -1,13 +1,12 @@
 from fastapi import FastAPI
+from utils.lifespan_handlers import token_cleaner
 from fastapi.testclient import TestClient
 from fastapi.security import OAuth2PasswordBearer
 
 from endpoints import auth, loans, admin
 
-from utils.jwt_handlers import verify_token
-from core.user_role_tools import get_current_admin, get_current_user
-from core.password_tools import verify_password
 from db.session_provider import get_db_session
+from models.models import UserInDb
 from schemas.auth_data import AuthData
 from schemas.users_data import UserActivationData, UserInfoData, UserCreationData
 from schemas.loans_data import LoanRequestData, LoanResponseData, LoanInfoData
@@ -18,8 +17,11 @@ import json
 from typing import List
 import random
 
-# Créer une instance de l'application FastAPI
-app = FastAPI()
+# Créer une instance de l'application FastAPI comme dans le main
+app = FastAPI(
+    lifespan=token_cleaner, 
+    title="Prediction Service", 
+    description="Service en ligne de prédiction de l'accord d'un prêt bancaire")
 
 # Inclure les routes définies dans les fichiers séparés
 app.include_router(auth.router)
@@ -31,11 +33,14 @@ app.include_router(admin.router)
 # oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 client = TestClient(app)
+#client.
 
 users = populate_db.users_list
 admin_user = users[0]
 client_user_1 = users[1]
+client_user_1.password="otherpass1"
 client_user_2 = users[2]
+client_user_2.password="otherpass2"
 
 #______________________________________________________________________________
 #
@@ -49,7 +54,7 @@ def test_login():
 
     if response.status_code == 200 :
         print ("test_login : OK")
-        print (response.json().get("access_token"))
+        #print (response.json().get("access_token"))
     else : 
         print ("test_login : errors / ko")
         
@@ -79,16 +84,30 @@ def get_headers(jwt_token) :
 # region 2 : auth activation
 #______________________________________________________________________________
 def test_activation():
+
+    # select unactivated user 
+    db_session = next(get_db_session())
+    inactive_user = db_session.query(UserInDb).filter(UserInDb.is_active==False).first()
+    if not inactive_user :
+        print ("test_activation : errors / ko ... (no inactive user in db)")
+        return
+
+    number = int(inactive_user.username.replace("User",""))
+
+    inactive_user_creation_data = UserCreationData(
+        email = inactive_user.email,
+        username= inactive_user.username,
+        role = inactive_user.role,
+        password = f"initialpass{number}"
+    )
     
-    user_login_response = get_login_response(client_user_1)
-    jwt_token = get_token(user_login_response)
+    inactive_user_login_response = get_login_response(inactive_user_creation_data)
+    jwt_token = get_token(inactive_user_login_response)
     headers = get_headers(jwt_token)
 
     # Données d'activation
     activation_data = UserActivationData(
-        email=client_user_1.email, 
-        is_active=True,
-        new_password= "otherpass1")
+        new_password= f"otherpass{number}")
     
     # Appel à la route d'activation
     response = client.post(
@@ -109,7 +128,7 @@ def test_activation():
 # region auth logout
 #______________________________________________________________________________
 def test_logout():
-
+    
     admin_login_response = get_login_response(client_user_1)
     jwt_token = get_token(admin_login_response)
     headers = get_headers(jwt_token)
@@ -123,7 +142,7 @@ def test_logout():
 
     if response.status_code == 200 :
         print ("test_logout: OK")
-        print(response.json())
+        #print(response.json())
     else : 
         print ("test_logout : errors / ko")
 
@@ -141,27 +160,27 @@ def test_loans_request():
 
     # Données de la demande de prêt
     loan_request_data = LoanRequestData(
-        state = loan_request_data.state,
-        bank = loan_request_data.bank,
-        naics = loan_request_data.naics,
-        term = loan_request_data.term,
-        no_emp = loan_request_data.no_emp,
-        new_exist = loan_request_data.new_exist,
-        create_job = loan_request_data.create_job,
-        retained_job = loan_request_data.create_job,
-        urban_rural = loan_request_data.urban_rural,
-        rev_line_cr= loan_request_data.rev_line_cr,
-        low_doc = loan_request_data.low_doc,
-        gr_appv = loan_request_data.gr_appv,
-        recession = loan_request_data.recession,
-        has_franchise = loan_request_data.has_franchise
+        state = "OH",
+        bank = "CAPITAL ONE NATL ASSOC",
+        naics = 54, 
+        term = 6,
+        no_emp = 13,
+        new_exist = 1,
+        create_job = 0,
+        retained_job = 3,
+        urban_rural = 2,
+        rev_line_cr= 0,
+        low_doc = 0,
+        gr_appv = 50000,
+        recession = 1,
+        has_franchise = 1
     )
 
     # Appel à la route de soumission de la demande de prêt
     response = client.post(
         "/loans/request", 
         data=loan_request_data.model_dump_json(), 
-        headers={"Authorization": "Bearer mock_token"})
+        headers=headers)
 
     # Vérifications
     if response.status_code == 200 :
@@ -219,15 +238,15 @@ def test_get_users():
     else : 
         print ("test_get_users : errors / ko")
     
-    users = []
-    try : 
-        json_data = response.json()
-        users : List[UserInfoData] = [UserInfoData.model_validate(user_data) for user_data in json_data]
-    except:
-        pass
+    # users = []
+    # try : 
+    #     json_data = response.json()
+    #     users : List[UserInfoData] = [UserInfoData.model_validate(user_data) for user_data in json_data]
+    # except:
+    #     pass
     
-    for user in users : 
-        print(user)
+    # for user in users : 
+    #     print(user)
 
 #______________________________________________________________________________
 #
@@ -245,7 +264,6 @@ def test_create_user():
     user_data = UserCreationData(
         email = f"user{n}.fakemail@fakeprovider.com",
         username=f"User{n}", 
-        is_active=False,
         role = "user",
         password= f"initialpass{n}")
     
@@ -260,7 +278,7 @@ def test_create_user():
     # Vérifications
     if response.status_code == 200 :
         print ("test_create_user : OK")
-        print(response.json())
+        #print(response.json())
     else : 
         print ("test_create_user : errors / ko")
 

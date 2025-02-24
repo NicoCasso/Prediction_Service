@@ -26,12 +26,15 @@ class UserInfoData(BaseModel):
 
 #______________________________________________________________________________
 #
-# region All data from User 
+# region Creation data needed for a User 
 #______________________________________________________________________________
-class UserCreationData(UserInfoData):
+class UserCreationData(BaseModel):
     """
-    All data
+    All data excluded 'is_active' field
     """
+    email: str
+    username : Optional [str] = None
+    role: str = "user"
     password : str
 
 

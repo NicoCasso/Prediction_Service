@@ -59,6 +59,8 @@ def login_for_access_token(
         raise login_unauthorised_exception
     
     if not verify_password(auth_data.password, db_user.password_hash):
+        from core.password_tools import get_password_hash
+        print(f"auth : {auth_data.password}, db : {db_user.password_hash}, test_hash ; {get_password_hash(auth_data.password)}")
         raise login_unauthorised_exception
          
     # Si l'utilisateur existe et que le mot de passe est valide, créer un token d'accès
@@ -117,7 +119,7 @@ def logout(
         raise unauthorised_exception
 
     payload = verify_token(token)
-    db_user = get_current_user(payload, db_session)
+    db_user = get_current_user(payload, db_session, need_activated_user=False)
     
     invalidate_token(token, db_session)
 

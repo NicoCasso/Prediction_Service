@@ -113,7 +113,7 @@ def loan_request(
         
     if successful :
         db_data.approval_status =  predicted
-        db_session.add(db_data)
+        # db_session.add(db_data) useless it allready exists in session
         db_session.commit()
         loan_response_data = LoanResponseData(approval_status=predicted)
     

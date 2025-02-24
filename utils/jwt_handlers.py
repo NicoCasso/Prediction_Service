@@ -2,14 +2,10 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from fastapi import HTTPException, status
-from passlib.context import CryptContext
 import jwt
 
 from core.config import ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
 from schemas.auth_data import Token
-
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> tuple[str, datetime]:
     to_encode = data.copy()

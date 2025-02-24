@@ -80,11 +80,16 @@ def create_user(
     db_user = UserInDb(email=creation_data.email)
     db_user.username = creation_data.username
     db_user.password_hash = get_password_hash(creation_data.email)
-    db_user.is_active = creation_data.is_active
+    db_user.is_active = False
     db_user.role = creation_data.role
-    db_session.add(db_user)
+    db_session.add(db_user) 
     db_session.commit()
-    db_session.refresh(db_user)
+    #db_session.refresh(db_user)
 
-    user_data : UserInfoData = creation_data
-    return user_data
+    user_info_data = UserInfoData(
+        email = db_user.email, 
+        username = db_user.username,
+        is_active= db_user.is_active,
+        role= db_user.role)     
+         
+    return user_info_data
