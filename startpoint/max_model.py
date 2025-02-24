@@ -1,5 +1,7 @@
 from models.models import LoanRequestInDb
 from catboost import CatBoostClassifier
+import pandas as pd
+import numpy as np
 import pickle 
 
 class MaxModel : 
@@ -29,7 +31,7 @@ class MaxModel :
             self.loan_data.urban_rural,
             self.loan_data.rev_line_cr,
             self.loan_data.low_doc,
-            self.loan_data.gr_appv,
+            float(self.loan_data.gr_appv),
             self.loan_data.recession,
             self.loan_data.has_franchise]
         ]
