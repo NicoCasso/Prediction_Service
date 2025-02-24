@@ -79,9 +79,9 @@ def loan_request(
 
     db_data = LoanRequestInDb(
         user_id = current_user.id,
-        state = loan_request_data.state,
-        bank = loan_request_data.bank,
-        naics = loan_request_data.naics,
+        state = loan_request_data.state, # = str
+        bank = loan_request_data.bank, # = str
+        naics = loan_request_data.naics, # will be casted in str
         term= loan_request_data.term,
         no_emp = loan_request_data.no_emp,
         new_exist = loan_request_data.new_exist, # = bool 
@@ -90,7 +90,7 @@ def loan_request(
         urban_rural =loan_request_data.urban_rural,
         rev_line_cr= loan_request_data.rev_line_cr, # = bool 
         low_doc = loan_request_data.low_doc, # = bool 
-        gr_appv = loan_request_data.gr_appv,
+        gr_appv = loan_request_data.gr_appv, # = float
         recession = loan_request_data.recession, # = bool 
         has_franchise = loan_request_data.has_franchise, # = bool 
     )

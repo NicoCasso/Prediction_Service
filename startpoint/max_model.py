@@ -20,20 +20,20 @@ class MaxModel :
         max_model : CatBoostClassifier = max_model
     
         features = [
-            [self.loan_data.state,
-            self.loan_data.bank,
-            str(self.loan_data.naics),
-            self.loan_data.term,
-            self.loan_data.no_emp,
-            self.loan_data.new_exist,
-            self.loan_data.create_job,
-            self.loan_data.retained_job,
-            self.loan_data.urban_rural,
-            self.loan_data.rev_line_cr,
-            self.loan_data.low_doc,
-            float(self.loan_data.gr_appv),
-            self.loan_data.recession,
-            self.loan_data.has_franchise]
+            [str(self.loan_data.state), # "State" : str
+            str(self.loan_data.bank), # "Bank" : str
+            str(self.loan_data.naics), # "NAICS" str
+            int(self.loan_data.term), # "Term" : int
+            int(self.loan_data.no_emp), # "NoEmp" : int 
+            int(self.loan_data.new_exist), # "NewExist" : int 
+            int(self.loan_data.create_job), # "CreateJob", :int
+            int(self.loan_data.retained_job), # "RetainedJob" : int
+            int(self.loan_data.urban_rural), # "UrbanRural" : int
+            int(self.loan_data.rev_line_cr), # "RevLineCr" : int
+            int(self.loan_data.low_doc), # "LowDoc" : int
+            float(self.loan_data.gr_appv), # "GrAppv" : float 
+            int(self.loan_data.recession), # "Recession" : int
+            int(self.loan_data.has_franchise)] # "HasFranchise" : int
         ]
 
         result = max_model.predict(features)
