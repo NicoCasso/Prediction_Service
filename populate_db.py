@@ -45,12 +45,10 @@ def populate_with_users(users_data : list[UserCreationData]) :
     SessionLocal = sessionmaker(autocommit=False, autoflush=True, bind=engine)
     Base: DeclarativeMeta = declarative_base()
     
-    session_generator = SessionLocal()
- 
-    # Ouvrir une session
-    with next(session_generator) as db_session:
-        # Sélection de chaque utilisateur à ajouter
-        
+    try:
+        # Ouvrir une session
+        db_session = SessionLocal()
+    
         for user_data in users_data :
 
             # statement = select(UserInDb).where(UserInDb.email==user_data.email)
@@ -66,10 +64,12 @@ def populate_with_users(users_data : list[UserCreationData]) :
                 new_user.is_active = (user_data.role == "admin")
                 db_session.add(new_user)
                 db_session.commit()
+    finally:
+        db_session.close()
 
     print("done")
 
 if __name__ == "__main__" :
-    populate_with_users(users_list)
+    populate_with_users(original_users_list)
 
     

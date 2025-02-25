@@ -193,7 +193,7 @@ async def test_loans_history():
 
     # Appel à la route d'historique des demandes de prêt
     async with httpx.AsyncClient() as client:
-        response = await client.post(
+        response = await client.get(
             "http://127.0.0.1:8000/loans/history", 
             headers=headers)
 
@@ -220,7 +220,7 @@ async def test_get_users():
 
     # Envoie une requête GET pour récupérer la liste des utilisateurs
     async with httpx.AsyncClient() as client:
-        response = await client.post(
+        response = await client.get(
             "http://127.0.0.1:8000/admin/users", 
             headers=headers )
 
