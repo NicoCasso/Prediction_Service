@@ -15,12 +15,7 @@ from schemas.loans_data import LoanRequestData, LoanResponseData, LoanInfoData
 
 from main import app
 
-users = populate_db.original_users_list
-admin_user = users[0]
-client_user_1 = users[1]
-client_user_1.password="otherpass1"
-client_user_2 = users[2]
-client_user_2.password="otherpass2"
+from populate_db import get_old_password, get_new_password, original_users_dict
 
 #______________________________________________________________________________
 #
@@ -29,7 +24,7 @@ client_user_2.password="otherpass2"
 async def test_login():
     """Test pour obtenir un token d'accès valide"""
 
-    user_data = admin_user
+    user_data = original_users_dict["admin"]
     response = await get_login_response(user_data)
 
     if response.status_code == 200 :
@@ -76,13 +71,11 @@ async def test_activation():
         print ("test_activation : errors / ko ... (no inactive user in db)")
         return
 
-    number = int(inactive_user.username.replace("User",""))
-
     inactive_user_creation_data = UserCreationData(
         email = inactive_user.email,
         username= inactive_user.username,
         role = inactive_user.role,
-        password = f"initialpass{number}"
+        password = get_old_password(inactive_user.username)
     )
     
     inactive_user_login_response = await get_login_response(inactive_user_creation_data)
@@ -91,7 +84,7 @@ async def test_activation():
 
     # Données d'activation
     activation_data = UserActivationData(
-        new_password= f"otherpass{number}")
+        new_password = get_new_password(inactive_user.username))
     
     # Appel à la route d'activation
     async with httpx.AsyncClient() as client:
@@ -114,7 +107,9 @@ async def test_activation():
 #______________________________________________________________________________
 async def test_logout():
     
-    admin_login_response = await get_login_response(client_user_1)
+    user_data = original_users_dict["active_user"]
+
+    admin_login_response = await get_login_response(user_data)
     jwt_token = get_token(admin_login_response)
     headers = get_headers(jwt_token)
 
@@ -140,7 +135,9 @@ async def test_logout():
 #______________________________________________________________________________
 async def test_loans_request():
 
-    user_login_response = await get_login_response(client_user_1)
+    user_data = original_users_dict["active_user"]
+
+    user_login_response = await get_login_response(user_data)
     jwt_token = get_token(user_login_response)
     headers = get_headers(jwt_token)
 
@@ -184,7 +181,9 @@ async def test_loans_request():
 #______________________________________________________________________________
 async def test_loans_history():
 
-    user_login_response = await get_login_response(client_user_1)
+    user_data = original_users_dict["active_user"]
+
+    user_login_response = await get_login_response(user_data)
     jwt_token = get_token(user_login_response)
     headers = get_headers(jwt_token)
 
@@ -211,7 +210,9 @@ async def test_loans_history():
 #______________________________________________________________________________
 async def test_get_users():
 
-    admin_login_response = await get_login_response(admin_user)
+    admin_data = original_users_dict["admin"]
+
+    admin_login_response = await get_login_response(admin_data)
     jwt_token = get_token(admin_login_response)
     headers = get_headers(jwt_token)
 
@@ -243,20 +244,24 @@ async def test_get_users():
 #______________________________________________________________________________
 async def test_create_user():
     
-    admin_login_response = await get_login_response(admin_user)
+    admin_data = original_users_dict["admin"]
+
+    admin_login_response = await get_login_response(admin_data)
     jwt_token = get_token(admin_login_response)
     headers = get_headers(jwt_token)
     
     n = str(random.randint(3, 99))
 
+    proto_email = "user" +str(n) + ".fakemail@fakeprovider.com"
+    proto_username = "User"+ str(n)
+
     # Données utilisateur à envoyer
     user_data = UserCreationData(
-        email = f"user{n}.fakemail@fakeprovider.com",
-        username=f"User{n}", 
+        email = proto_email,
+        username = proto_username, 
         role = "user",
-        password= f"initialpass{n}")
+        password= get_old_password(proto_username))
     
-    users.append(user_data)
 
     # Simuler l'appel à la route de création d'utilisateur
     async with httpx.AsyncClient() as client:

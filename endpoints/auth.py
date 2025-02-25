@@ -95,7 +95,7 @@ def activate_account(
     payload = verify_token(token)
     db_user = get_current_user(payload, db_session, need_activated_user=False)
     db_user.is_active = True
-    db_user.password_hash = asyncio.run(get_password_hash(user_data.new_password))
+    db_user.password_hash = get_password_hash(user_data.new_password)
     
     db_session.add(db_user)
     db_session.commit()
