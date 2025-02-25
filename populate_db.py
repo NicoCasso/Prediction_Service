@@ -1,10 +1,15 @@
-from sqlmodel import SQLModel, Field, create_engine
-#from sqlmodel import Session, select
-from sqlalchemy.orm import Session
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
+from sqlalchemy.orm import sessionmaker, Session 
+from typing import Generator, Any
+
+#application imports
 from core.config import DATABASE_URL
 from models.models import UserInDb
 from schemas.users_data import UserCreationData
 from core.password_tools import get_password_hash
+
+
 
 object_list = []
 object_list.append(
@@ -32,14 +37,18 @@ object_list.append(
 # code equivalent à :
 #   from typing import cast 
 #   users_list = cast(list[UserData], object_list)
-users_list : list[UserCreationData] = object_list
+original_users_list : list[UserCreationData] = object_list
 
 def populate_with_users(users_data : list[UserCreationData]) :
 
-    engine = create_engine(DATABASE_URL)
-
+    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})  # connect_args nécessaire pour SQLite
+    SessionLocal = sessionmaker(autocommit=False, autoflush=True, bind=engine)
+    Base: DeclarativeMeta = declarative_base()
+    
+    session_generator = SessionLocal()
+ 
     # Ouvrir une session
-    with Session(engine) as db_session:
+    with next(session_generator) as db_session:
         # Sélection de chaque utilisateur à ajouter
         
         for user_data in users_data :
@@ -48,7 +57,6 @@ def populate_with_users(users_data : list[UserCreationData]) :
             # result = db_session.exec(statement).one_or_none()
 
             result = db_session.query(UserInDb).filter(UserInDb.email==user_data.email).first()
-
 
             if not result :
                 new_user= UserInDb(email=user_data.email)

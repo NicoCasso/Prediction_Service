@@ -1,9 +1,13 @@
-from fastapi import FastAPI
-from utils.lifespan_handlers import token_cleaner
-from fastapi.testclient import TestClient
-from fastapi.security import OAuth2PasswordBearer
 
-from endpoints import auth, loans, admin
+
+import httpx
+import uvicorn
+import asyncio
+
+import json
+from typing import List
+import random
+import populate_db as populate_db 
 
 from db.session_provider import get_db_session
 from models.models import UserInDb
@@ -11,31 +15,10 @@ from schemas.auth_data import AuthData
 from schemas.users_data import UserActivationData, UserInfoData, UserCreationData
 from schemas.loans_data import LoanRequestData, LoanResponseData, LoanInfoData
 
-import populate_db as populate_db 
-
-import json
-from typing import List
-import random
-
-# Créer une instance de l'application FastAPI comme dans le main
-app = FastAPI(
-    lifespan=token_cleaner, 
-    title="Prediction Service", 
-    description="Service en ligne de prédiction de l'accord d'un prêt bancaire")
-
-# Inclure les routes définies dans les fichiers séparés
-app.include_router(auth.router)
-app.include_router(loans.router)
-app.include_router(admin.router)
+from main import app
 
 
-# # Définir un schéma d'authentification
-# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-client = TestClient(app)
-#client.
-
-users = populate_db.users_list
+users = populate_db.original_users_list
 admin_user = users[0]
 client_user_1 = users[1]
 client_user_1.password="otherpass1"
@@ -46,11 +29,11 @@ client_user_2.password="otherpass2"
 #
 # region 1 : auth login
 #______________________________________________________________________________
-def test_login():
+async def test_login():
     """Test pour obtenir un token d'accès valide"""
 
     user_data = admin_user
-    response = get_login_response(user_data)
+    response = await get_login_response(user_data)
 
     if response.status_code == 200 :
         print ("test_login : OK")
@@ -59,14 +42,18 @@ def test_login():
         print ("test_login : errors / ko")
         
 
-def get_login_response(user_data : UserCreationData) :
+async def get_login_response(user_data : UserCreationData) :
     
     auth_data = AuthData(
         email=user_data.email, 
         password=user_data.password)
     
-    response = client.post("/auth/login", data = auth_data.model_dump_json())
-    return response
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            "http://127.0.0.1:8000/auth/login",
+             data = auth_data.model_dump_json())
+
+        return response
     
 def get_token(loginresponse):
     access_token = loginresponse.json().get("access_token")
@@ -83,7 +70,7 @@ def get_headers(jwt_token) :
 #
 # region 2 : auth activation
 #______________________________________________________________________________
-def test_activation():
+async def test_activation():
 
     # select unactivated user 
     db_session = next(get_db_session())
@@ -101,7 +88,7 @@ def test_activation():
         password = f"initialpass{number}"
     )
     
-    inactive_user_login_response = get_login_response(inactive_user_creation_data)
+    inactive_user_login_response = await get_login_response(inactive_user_creation_data)
     jwt_token = get_token(inactive_user_login_response)
     headers = get_headers(jwt_token)
 
@@ -110,10 +97,11 @@ def test_activation():
         new_password= f"otherpass{number}")
     
     # Appel à la route d'activation
-    response = client.post(
-        "/auth/activation", 
-        data=activation_data.model_dump_json(), 
-        headers= headers)
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            "http://127.0.0.1:8000/auth/activation", 
+            data=activation_data.model_dump_json(), 
+            headers= headers)
 
     # Vérifications
     if response.status_code == 200 :
@@ -127,15 +115,16 @@ def test_activation():
 #
 # region auth logout
 #______________________________________________________________________________
-def test_logout():
+async def test_logout():
     
-    admin_login_response = get_login_response(client_user_1)
+    admin_login_response = await get_login_response(client_user_1)
     jwt_token = get_token(admin_login_response)
     headers = get_headers(jwt_token)
 
     # Appel à la route de déconnexion
-    response = client.post(
-        "/auth/logout", 
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            "http://127.0.0.1:8000/auth/logout", 
         headers=headers)
 
     # Vérifications
@@ -152,9 +141,9 @@ def test_logout():
 #
 # region 3 : loans request
 #______________________________________________________________________________
-def test_loans_request():
+async def test_loans_request():
 
-    user_login_response = get_login_response(client_user_1)
+    user_login_response = await get_login_response(client_user_1)
     jwt_token = get_token(user_login_response)
     headers = get_headers(jwt_token)
 
@@ -177,10 +166,11 @@ def test_loans_request():
     )
 
     # Appel à la route de soumission de la demande de prêt
-    response = client.post(
-        "/loans/request", 
-        data=loan_request_data.model_dump_json(), 
-        headers=headers)
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            "http://127.0.0.1:8000/loans/request", 
+            data=loan_request_data.model_dump_json(), 
+            headers=headers)
 
     # Vérifications
     if response.status_code == 200 :
@@ -195,16 +185,17 @@ def test_loans_request():
 #
 # region 4 : loans history
 #______________________________________________________________________________
-def test_loans_history():
+async def test_loans_history():
 
-    user_login_response = get_login_response(client_user_1)
+    user_login_response = await get_login_response(client_user_1)
     jwt_token = get_token(user_login_response)
     headers = get_headers(jwt_token)
 
     # Appel à la route d'historique des demandes de prêt
-    response = client.get(
-        "/loans/history", 
-        headers=headers)
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            "http://127.0.0.1:8000/loans/history", 
+            headers=headers)
 
     # Vérifications
     if response.status_code == 200 :
@@ -221,16 +212,17 @@ def test_loans_history():
 #
 # region 5 : admin users
 #______________________________________________________________________________
-def test_get_users():
+async def test_get_users():
 
-    admin_login_response = get_login_response(admin_user)
+    admin_login_response = await get_login_response(admin_user)
     jwt_token = get_token(admin_login_response)
     headers = get_headers(jwt_token)
 
     # Envoie une requête GET pour récupérer la liste des utilisateurs
-    response = client.get(
-        "/admin/users", 
-        headers=headers )
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            "http://127.0.0.1:8000/admin/users", 
+            headers=headers )
 
     # Vérifie la réponse et les résultats attendus
     if response.status_code == 200 :
@@ -252,9 +244,9 @@ def test_get_users():
 #
 # region 6 : create_user
 #______________________________________________________________________________
-def test_create_user():
+async def test_create_user():
     
-    admin_login_response = get_login_response(admin_user)
+    admin_login_response = await get_login_response(admin_user)
     jwt_token = get_token(admin_login_response)
     headers = get_headers(jwt_token)
     
@@ -270,10 +262,11 @@ def test_create_user():
     users.append(user_data)
 
     # Simuler l'appel à la route de création d'utilisateur
-    response = client.post(
-        "/admin/users", 
-        data = user_data.model_dump_json(),
-        headers = headers)
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            "http://127.0.0.1:8000/admin/users", 
+            data = user_data.model_dump_json(),
+            headers = headers)
 
     # Vérifications
     if response.status_code == 200 :
@@ -284,8 +277,42 @@ def test_create_user():
 
     #assert response.json()["email"] == user_data["email"]
 
-if __name__ == "__main__" :
+#______________________________________________________________________________
+#
+# region  start_uvicorn
+#______________________________________________________________________________
+async def start_uvicorn():
+    config = uvicorn.Config("main:app", host="127.0.0.1", port=8000, reload=True)
+    server = uvicorn.Server(config)
+    
+    # Démarrer le serveur
+    await server.serve()
 
+#______________________________________________________________________________
+#
+# region  stop_uvicorn
+#______________________________________________________________________________
+async def stop_uvicorn(server_task : asyncio.Task):
+    server_task.cancel()  # Annuler la tâche du serveur Uvicorn
+    try:
+        await server_task  # Attendre que la tâche soit bien terminée
+    except asyncio.CancelledError:
+        pass  # Ignorer l'exception d'annulation
+
+
+#______________________________________________________________________________
+#
+# region all_tests
+#______________________________________________________________________________
+async def all_tests() :
+
+    # Créer et démarrer le serveur Uvicorn
+    print("Start uvicorn server...")
+    server_task = asyncio.create_task(start_uvicorn())
+    
+    # Attendre un peu pour que le serveur démarre (1 seconde)
+    await asyncio.sleep(1)
+ 
     tests = []
     tests.append(test_login)
     tests.append(test_get_users)
@@ -295,8 +322,18 @@ if __name__ == "__main__" :
     tests.append(test_loans_request)
     tests.append(test_logout)
 
+    # Faire les requêtes HTTP
     print("_________________________________________________________")
     for test in tests:
-        test()
+        await test()
         print("_________________________________________________________")
+
+    # Après avoir effectué les tests, arrêter le serveur proprement
+    print("Stop uvicorn server...")
+    await stop_uvicorn(server_task)
+    
+    print("done.")
+
+if __name__ == "__main__":
+    asyncio.run(all_tests())
 
