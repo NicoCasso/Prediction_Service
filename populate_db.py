@@ -1,15 +1,14 @@
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
-from sqlalchemy.orm import sessionmaker, Session 
-from typing import Generator, Any
+from sqlalchemy.orm import declarative_base, DeclarativeMeta, sessionmaker, Session 
 
 #application imports
 from core.config import DATABASE_URL
 from models.models import UserInDb
 from schemas.users_data import UserCreationData
+
 from core.password_tools import get_password_hash
 
-
+from main import app
 
 object_list = []
 object_list.append(
@@ -59,7 +58,7 @@ def populate_with_users(users_data : list[UserCreationData]) :
             if not result :
                 new_user= UserInDb(email=user_data.email)
                 new_user.username = user_data.username
-                new_user.password_hash = get_password_hash(user_data.password)
+                new_user.password_hash = get_password_hash(user_data.password) 
                 new_user.role = user_data.role
                 new_user.is_active = (user_data.role == "admin")
                 db_session.add(new_user)

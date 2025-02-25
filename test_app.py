@@ -1,5 +1,3 @@
-
-
 import httpx
 import uvicorn
 import asyncio
@@ -16,7 +14,6 @@ from schemas.users_data import UserActivationData, UserInfoData, UserCreationDat
 from schemas.loans_data import LoanRequestData, LoanResponseData, LoanInfoData
 
 from main import app
-
 
 users = populate_db.original_users_list
 admin_user = users[0]
@@ -331,7 +328,7 @@ async def all_tests() :
     # Après avoir effectué les tests, arrêter le serveur proprement
     print("Stop uvicorn server...")
     await stop_uvicorn(server_task)
-    
+
     print("done.")
 
 if __name__ == "__main__":

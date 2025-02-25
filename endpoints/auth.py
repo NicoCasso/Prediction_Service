@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from datetime import timedelta
 
+
 # application imports
 from core.config import ACCESS_TOKEN_EXPIRE_MINUTES
 from core.password_tools import verify_password, get_password_hash
@@ -59,7 +60,7 @@ def login_for_access_token(
         raise login_unauthorised_exception
     
     if not verify_password(auth_data.password, db_user.password_hash):
-        from core.password_tools import get_password_hash
+        
         print(f"auth : {auth_data.password}, db : {db_user.password_hash}, test_hash ; {get_password_hash(auth_data.password)}")
         raise login_unauthorised_exception
          
@@ -94,7 +95,7 @@ def activate_account(
     payload = verify_token(token)
     db_user = get_current_user(payload, db_session, need_activated_user=False)
     db_user.is_active = True
-    db_user.password_hash = get_password_hash(user_data.new_password)
+    db_user.password_hash = asyncio.run(get_password_hash(user_data.new_password))
     
     db_session.add(db_user)
     db_session.commit()
