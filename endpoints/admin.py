@@ -80,7 +80,7 @@ def create_user(
     
     db_user = UserInDb(email=creation_data.email)
     db_user.username = creation_data.username
-    db_user.password_hash = get_password_hash(creation_data.email)
+    db_user.password_hash = get_password_hash(creation_data.password)
     db_user.is_active = False
     db_user.role = creation_data.role
     db_session.add(db_user) 
