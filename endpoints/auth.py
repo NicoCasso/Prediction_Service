@@ -36,7 +36,7 @@ unauthorised_exception = HTTPException(
 #
 # region Connexion et récupération du token
 #______________________________________________________________________________
-@router.post("/auth/login", response_model=Token)
+@router.post("/login", response_model=Token)
 def login_for_access_token(
     auth_data: AuthData, 
     db_session: Session = Depends(get_db_session)) -> Token:
@@ -80,7 +80,7 @@ def login_for_access_token(
 #
 # region Activation du compte et changement du mot de passe
 #______________________________________________________________________________
-@router.post("/auth/activation")
+@router.post("/activation")
 def activate_account(
     user_data: UserActivationData, 
     token: str = Depends(activation_scheme), 
@@ -108,7 +108,7 @@ def activate_account(
 #
 # region Déconnexion
 #______________________________________________________________________________
-@router.post("/auth/logout")
+@router.post("/logout")
 def logout(
     token: str = Depends(logout_scheme),
     db_session: Session = Depends(get_db_session)):

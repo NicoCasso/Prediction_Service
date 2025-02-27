@@ -1,8 +1,8 @@
 import os
 from dotenv import load_dotenv
 
-DATABASE_URL = "sqlite:///./db/prediction_service_db.db" # also present in alembic.ini, section [alembic]
-DATABASE_NAME = "prediction_service_db.db"
+DATABASE_URL = "sqlite:///./db/prediction_service_database.db" # also present in alembic.ini, section [alembic]
+DATABASE_NAME = "prediction_service_database.db"
 
 load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY", "thequickbrownfoxjumpsoverthelazydog")

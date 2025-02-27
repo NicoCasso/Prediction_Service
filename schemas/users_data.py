@@ -30,7 +30,7 @@ class UserInfoData(BaseModel):
 #______________________________________________________________________________
 class UserCreationData(BaseModel):
     """
-    All data excluded 'is_active' field
+    All data excluding 'is_active' field
     """
     email: str
     username : Optional [str] = None

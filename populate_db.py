@@ -1,91 +1,104 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, DeclarativeMeta, sessionmaker, Session 
+from sqlalchemy.orm import sessionmaker
+import re
+from sqlalchemy.exc import IntegrityError
+import logging
 
-#application imports
+# Application imports
 from core.config import DATABASE_URL
 from models.models import UserInDb
 from schemas.users_data import UserCreationData
-
 from core.password_tools import get_password_hash
 
-from main import app
+# Logging configuration
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-def get_old_password(username : str) :
-    number = int(username.replace("User",""))
-    old_password = "initialpass"+ str(number)
-    return old_password
+# Helper functions for password generation
+def get_old_password(username: str) -> str:
+    number = int(username.replace("User", ""))
+    return f"initialpass{number}"
 
-def get_new_password(username : str) :
-    number = int(username.replace("User",""))
-    new_password = "otherpass"+ str(number)
-    return new_password
+def get_new_password(username: str) -> str:
+    number = int(username.replace("User", ""))
+    return f"otherpass{number}"
 
-object_dict = {}
-object_dict["admin"] = UserCreationData(
-    email="nicolas.cassonnet@wanadoo.fr",
-    username = "Nicolas",
-    password = "nicolas.cassonnet@wanadoo.fr", 
-    role = "admin")
+# Function to check if a password is already hashed
+def is_already_hashed(password: str) -> bool:
+    """
+    Check if the password is already hashed (starts with $2b$).
+    """
+    return re.match(r"^\$2[abxy]\$\d{2}\$", password) is not None
 
-object_dict["active_user"] = UserCreationData( 
-    email="user1.fakemail@fakeprovider.com",
-    username = "User1",
-    password = get_new_password("User1"), 
-    role = "user")
+# Predefined user data
+object_dict = {
+    "admin_nicolas": UserCreationData(
+        email="nicolas.cassonnet@wanadoo.fr",
+        username="Nicolas",
+        password="nicolas.cassonnet@wanadoo.fr",
+        role="admin",
+    ),
+    "active_user": UserCreationData(
+        email="usermike@test.com",
+        username="usermike",
+        password="$2b$12$4Ycft6eU9X5rWXlR4LrsHO2kXZ7B/3pu6P/WKEJJt6Z5kfbt.dx6W",
+        role="user",
+    ),
+    "admin_mike": UserCreationData(
+        email="mike@test.com",
+        username="adminmike",
+        password="$2b$12$rIOqGQhPBhksARaOz.qHz.rm4tHqmA2DUtMNCt8Hhd18DuXNiWIse",
+        role="admin",
+    ),
+}
 
-object_dict["inactive_user"] = UserCreationData( 
-    email="user2.fakemail@fakeprovider.com",
-    username = "User2",
-    password = get_old_password("User2"), 
-    role = "user")
-
-
-
-# code equivalent à :
-#   from typing import cast 
-#   users_list = cast(list[UserData], object_list)
-original_users_dict : dict[str, UserCreationData] = object_dict
-
-def populate_with_users(users_data : dict[str, UserCreationData]) :
-
-    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})  # connect_args nécessaire pour SQLite
+# Populate the database with users
+def populate_with_users(users_data: dict[str, UserCreationData]):
+    """
+    Populates the database with predefined users.
+    """
+    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})  # Required for SQLite
     SessionLocal = sessionmaker(autocommit=False, autoflush=True, bind=engine)
-    Base: DeclarativeMeta = declarative_base()
-    
+
     try:
-        # Ouvrir une session
         db_session = SessionLocal()
-    
-        for user_key, user_data in users_data.items() :
 
-            # statement = select(UserInDb).where(UserInDb.email==user_data.email)
-            # result = db_session.exec(statement).one_or_none()
-
-            result = db_session.query(UserInDb).filter(UserInDb.email==user_data.email).first()
-
-            if not result :
-                new_user= UserInDb(email=user_data.email)
+        for user_key, user_data in users_data.items():
+            # Check if the user already exists in the database
+            result = db_session.query(UserInDb).filter(UserInDb.email == user_data.email).first()
+            if not result:
+                new_user = UserInDb(email=user_data.email)
                 new_user.username = user_data.username
                 new_user.role = user_data.role
-                match (user_key) : 
-                    case "admin" :
-                        new_user.password_hash = get_password_hash(user_data.password) 
-                        new_user.is_active = True
-                    case "active_user" :
-                        new_user.password_hash = get_password_hash(get_new_password(user_data.username)) 
-                        new_user.is_active = True
-                    case "inactive_user" :
-                        new_user.password_hash = get_password_hash(get_old_password(user_data.username)) 
-                        new_user.is_active = False
 
-                db_session.add(new_user)
-                db_session.commit()
+                # Handle password hashing
+                if is_already_hashed(user_data.password):
+                    new_user.password_hash = user_data.password  # Directly assign pre-hashed password
+                else:
+                    new_user.password_hash = get_password_hash(user_data.password)  # Hash plaintext password
+
+                # Handle role-specific logic
+                if user_key in ["admin_mike", "active_user"]:
+                    new_user.is_active = True
+                elif user_key == "inactive_user":
+                    new_user.password_hash = get_password_hash(get_old_password(user_data.username))
+                    new_user.is_active = False
+
+                try:
+                    db_session.add(new_user)
+                    db_session.commit()
+                    logger.info(f"Added user: {user_data.email}")
+                except IntegrityError as e:
+                    db_session.rollback()
+                    logger.error(f"Error adding user {user_data.email}: {e}")
+                except Exception as e:
+                    db_session.rollback()
+                    logger.error(f"Unexpected error: {e}")
+
     finally:
         db_session.close()
 
-    print("done")
+    logger.info("Database population complete.")
 
-if __name__ == "__main__" :
-    populate_with_users(original_users_dict)
-
-    
+if __name__ == "__main__":
+    populate_with_users(object_dict)

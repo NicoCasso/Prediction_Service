@@ -1,7 +1,5 @@
 from models.models import LoanRequestInDb
 from catboost import CatBoostClassifier
-import pandas as pd
-import numpy as np
 import pickle 
 
 class MaxModel : 
@@ -9,8 +7,8 @@ class MaxModel :
     def __init__(self, loan_data : LoanRequestInDb):
         self.loan_data = loan_data
         self.result_dico = {
-            0 : "Not approved",
-            1 : "Approved"
+            0 : "reject",
+            1 : "approve"
         }
     
     def predict_approval_status(self) :

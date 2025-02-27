@@ -29,7 +29,7 @@ unauthorised_exception = HTTPException(
 #
 # region Liste des utilisateurs (Admin)
 #______________________________________________________________________________
-@router.get("/admin/users", response_model=List[UserInfoData])
+@router.get("/users", response_model=List[UserInfoData])
 def get_users(
     token : str  = Depends(admin_scheme), 
     db_session: Session = Depends(get_db_session)) -> list[UserInfoData]:
@@ -61,7 +61,7 @@ def get_users(
 #
 # region Création d'un utilisateur (Admin)
 #______________________________________________________________________________
-@router.post("/admin/users", response_model=UserInfoData)
+@router.post("/users", response_model=UserInfoData)
 def create_user(
     creation_data: UserCreationData, 
     token : str = Depends(admin_scheme), 
