@@ -29,6 +29,22 @@ class LoanRequestData(BaseModel):
 #______________________________________________________________________________
 class LoanResponseData(BaseModel):
     approval_status : str
+    approval_proba_0 : float
+    approval_proba_1 : float
+    feat_imp_state : float
+    feat_imp_bank : float  
+    feat_imp_naics : float  
+    feat_imp_term : float  
+    feat_imp_no_emp : float  
+    feat_imp_new_exist : float  
+    feat_imp_create_job : float  
+    feat_imp_retained_job : float  
+    feat_imp_urban_rural : float  
+    feat_imp_rev_line_cr : float  
+    feat_imp_low_doc : float  
+    feat_imp_gr_appv : float  
+    feat_imp_recession : float  
+    feat_imp_has_franchise : float
 
 #______________________________________________________________________________
 #

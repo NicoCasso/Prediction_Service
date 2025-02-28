@@ -169,6 +169,7 @@ async def test_loans_request():
     # Vérifications
     if response.status_code == 200 :
         print ("test_loans_request: OK")
+        print (response.json())
     else : 
         print ("test_loans_request : errors / ko")
 
