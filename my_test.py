@@ -5,24 +5,25 @@ import requests
 base_url = "http://127.0.0.1:8000"
 
 # Authentication token (ensure you have a valid token from the `/auth/login` endpoint)
-auth_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJtaWtlQHRlc3QuY29tIiwiaWQiOjEsImV4cCI6MTc0MDY4NjI4OX0.2o_DGCzqaif6PPtlW3CyjeasEa3t3psIC3c37toQMfg"
+auth_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJtaWtlQHRlc3QuY29tIiwiaWQiOjEsImV4cCI6MTc0MDc0MTQ3NX0.E2gc5GcG2qPhaI5V5UdxSeKLS6RHfTsjrmQHVfHJqoU"
+
 
 # Loan request data
 loan_request_data = {
     "state": "CA",
-    "bank": "CAPITAL ONE NATL ASSOC",
-    "naics": 55,
-    "term": 12,
-    "no_emp": 12,
+    "bank": "JP MORGAN",
+    "naics": 92,
+    "term": 36,
+    "no_emp": 19,
     "new_exist": 1,
-    "create_job": 4,
-    "retained_job": 3,
-    "urban_rural": 0,
-    "rev_line_cr": 1,
-    "low_doc": 1,
-    "gr_appv": 90000,
-    "recession": 1,
-    "has_franchise": 1
+    "create_job": 30,
+    "retained_job": 25,
+    "urban_rural": 1,
+    "rev_line_cr": 0,
+    "low_doc": 0,
+    "gr_appv": 170000,
+    "recession": 0,
+    "has_franchise": 0
 }
 
 # Headers for the request
