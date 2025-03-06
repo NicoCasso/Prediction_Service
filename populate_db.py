@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, DeclarativeMeta, sessionmaker, Session 
 
 #application imports
-from core.config import DATABASE_URL
+from core.config import CONNECTION_STRING, CONNECTION_ARGS
 from models.models import UserInDb
 from schemas.users_data import UserCreationData
 
@@ -48,7 +48,10 @@ original_users_dict : dict[str, UserCreationData] = object_dict
 
 def populate_with_users(users_data : dict[str, UserCreationData]) :
 
-    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})  # connect_args nécessaire pour SQLite
+    conn_args = CONNECTION_ARGS
+    #conn_args["check_same_thread"] = False nécessaire pour sqlite
+
+    engine = create_engine(CONNECTION_STRING, connect_args=conn_args)  
     SessionLocal = sessionmaker(autocommit=False, autoflush=True, bind=engine)
     Base: DeclarativeMeta = declarative_base()
     

@@ -16,4 +16,3 @@ lancer populate_db.py
 # lancer les tests :
 lancer test_app.py
 
-   

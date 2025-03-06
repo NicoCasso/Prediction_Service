@@ -1,4 +1,6 @@
 from sqlmodel import Field, SQLModel, Relationship
+from sqlalchemy import Column, String
+
 from datetime import datetime
 from typing import List, Optional
 
@@ -21,7 +23,13 @@ class UserInDb(SQLModel, table=True):
 
     id: int = Field(default=None, primary_key=True)
     username : str = Field(default="Vous", nullable=True)
-    email: str = Field(unique=True, index=True, nullable=False)
+    email: str = Field(
+        sa_column = Column(type_=String(255),
+            default=None, 
+            index=True, 
+            unique=True, 
+            nullable=False))
+    
     password_hash: str
     role: str = Field(default="user", nullable=False)
     is_active: bool = Field(default=False)

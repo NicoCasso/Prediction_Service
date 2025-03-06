@@ -1,12 +1,13 @@
 import sys
 from pathlib import Path
-from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config, pool
-from sqlalchemy.ext.declarative import declarative_base
 from sqlmodel import SQLModel
 
 from alembic import context
+import urllib.parse
+from typing import Any
+from core.config import CONNECTION_STRING, CONNECTION_ARGS
 
 # C'est important d'ajouter le chemin vers le dossier principal de l'application pour importer correctement les modèles
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -18,14 +19,22 @@ from models.models import UserInDb, LoanRequestInDb, TokenInDB # Attention au ch
 #
 # Lire la configuration de la base de données depuis le fichier alembic.ini
 #______________________________________________________________________________
-config = context.config
+def adapt_config() -> dict[str, Any]:
+    config = context.config
 
-# Lire le fichier de configuration .ini pour les paramètres de connexion à la base de données
-fileConfig(config.config_file_name)
+    connection_string = (
+        f"{CONNECTION_STRING}"
+        f"&Encrypt={CONNECTION_ARGS['Encrypt']}"
+        f"&TrustServerCertificate={CONNECTION_ARGS['TrustServerCertificate']}"
+    )
+
+    ini_section = config.get_section(config.config_ini_section)
+    ini_section['sqlalchemy.url'] = connection_string
+    return ini_section
 
 #______________________________________________________________________________
 #
-# Configuration de l'URL de la base de données (elle peut être définie dans alembic.ini)
+# Configuration de de la base de données 
 #______________________________________________________________________________
 target_metadata = SQLModel.metadata  # Cela pointe vers les métadonnées des modèles SQLModel
 
@@ -47,7 +56,10 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
+
+    config = adapt_config()
+    url = config['sqlalchemy.url']
+
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -66,8 +78,11 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
+
+    config = adapt_config()
+
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
+        config,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )

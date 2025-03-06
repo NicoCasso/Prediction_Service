@@ -3,9 +3,12 @@ from sqlalchemy.orm import declarative_base, DeclarativeMeta, sessionmaker, Sess
 from typing import Generator, Any
 
 #application imports
-from core.config import DATABASE_URL
+from core.config import CONNECTION_STRING, CONNECTION_ARGS
 
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})  # connect_args nécessaire pour SQLite
+conn_args = CONNECTION_ARGS
+#conn_args["check_same_thread"] = False nécessaire pour sqlite
+
+engine = create_engine(CONNECTION_STRING, connect_args=conn_args)  
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=True, bind=engine)
 
