@@ -5,7 +5,7 @@ import requests
 base_url = "http://127.0.0.1:8000"
 
 # Authentication token (ensure you have a valid token from the `/auth/login` endpoint)
-auth_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJtaWtlQHRlc3QuY29tIiwiaWQiOjEsImV4cCI6MTc0MDc0MTQ3NX0.E2gc5GcG2qPhaI5V5UdxSeKLS6RHfTsjrmQHVfHJqoU"
+auth_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJtaWtlQHRlc3QuY29tIiwiaWQiOjEsImV4cCI6MTc0MTE4MjM3M30.XYa7lJqngQoVw37mjfk6DZsFeK5K4Iq8HUChSH1nVec"
 
 
 # Loan request data

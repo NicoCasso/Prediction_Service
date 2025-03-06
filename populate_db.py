@@ -32,24 +32,24 @@ def is_already_hashed(password: str) -> bool:
 
 # Predefined user data
 object_dict = {
-    "admin_nicolas": UserCreationData(
-        email="nicolas.cassonnet@wanadoo.fr",
-        username="Nicolas",
-        password="nicolas.cassonnet@wanadoo.fr",
+    "admin_max": UserCreationData(
+        email="max.fla@simplon.fr",
+        username="Max",
+        password="maxfla",
         role="admin",
     ),
-    "active_user": UserCreationData(
-        email="usermike@test.com",
-        username="usermike",
-        password="$2b$12$4Ycft6eU9X5rWXlR4LrsHO2kXZ7B/3pu6P/WKEJJt6Z5kfbt.dx6W",
-        role="user",
-    ),
-    "admin_mike": UserCreationData(
-        email="mike@test.com",
-        username="adminmike",
-        password="$2b$12$rIOqGQhPBhksARaOz.qHz.rm4tHqmA2DUtMNCt8Hhd18DuXNiWIse",
-        role="admin",
-    ),
+    # "active_user": UserCreationData(
+    #     email="usermike@test.com",
+    #     username="usermike",
+    #     password="$2b$12$4Ycft6eU9X5rWXlR4LrsHO2kXZ7B/3pu6P/WKEJJt6Z5kfbt.dx6W",
+    #     role="user",
+    # ),
+    # "admin_mike": UserCreationData(
+    #     email="mike@test.com",
+    #     username="adminmike",
+    #     password="$2b$12$rIOqGQhPBhksARaOz.qHz.rm4tHqmA2DUtMNCt8Hhd18DuXNiWIse",
+    #     role="admin",
+    # ),
 }
 
 # Populate the database with users
