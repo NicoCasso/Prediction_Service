@@ -20,15 +20,14 @@ class UserInDb(SQLModel, table=True):
         loans (List[LoanRequestInDb]): Relationship with the LoanRequest table.
                                        Each user can have multiple loan requests.
     """
-    __tablename__ = "users"
-    id: int = Field(default=None, primary_key=True)
-    username: str = Field(default="You", nullable=True)
-    email: str = Field(unique=True, index=True, nullable=False)
-    password_hash: str
-    role: str = Field(default="user", nullable=False)
-    is_active: bool = Field(default=False)
 
-    # Relationship to link loan requests to a user
+    __tablename__ = "userindb"
+    id: int = Field(default=None, primary_key=True)
+    username: Optional[str] = Field(default="You", max_length=100, nullable=True)
+    email: Optional[str] = Field(unique=True, max_length=255, nullable=False)
+    password_hash: str = Field(max_length=255, nullable=False)
+    role: str = Field(default="user", max_length=50, nullable=False)
+    is_active: bool = Field(default=False)
     loans: List["LoanRequestInDb"] = Relationship(back_populates="user")
 
 #______________________________________________________________________________
@@ -59,29 +58,27 @@ class LoanRequestInDb(SQLModel, table=True):
         approval_status (Optional[str]): Approval status of the loan request.
     """
     __tablename__ = "loan_requests"
-    id: Optional[int] = Field(default=None, primary_key=True)
-    user_id: int = Field(default=None, foreign_key="users.id")
-    # Request fields
-    state: str = Field()
-    bank: str = Field()
-    naics: int = Field()
-    term: int = Field()
-    no_emp: int = Field()
-    new_exist: int = Field()  # boolean
-    create_job: int = Field()
-    retained_job: int = Field()
-    urban_rural: int = Field()
-    rev_line_cr: int = Field()  # boolean
-    low_doc: int = Field()  # boolean
-    gr_appv: int = Field()
-    recession: int = Field()  # boolean
-    has_franchise: int = Field()  # boolean
 
-    # Request status
-    approval_status: Optional[str] = Field(default=None)
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="userindb.id")
+    state: str = Field(max_length=10, nullable=False)
+    bank: str = Field(max_length=255, nullable=False)
+    naics: int = Field(nullable=False)
+    term: int = Field(nullable=False)
+    no_emp: int = Field(nullable=False)
+    new_exist: int = Field(default=0)
+    create_job: int = Field(nullable=False)
+    retained_job: int = Field(nullable=False)
+    urban_rural: int = Field(default=0)
+    rev_line_cr: int = Field(default=0)
+    low_doc: int = Field(default=0)
+    gr_appv: int = Field(nullable=False)
+    recession: int = Field(default=0)
+    has_franchise: int = Field(default=0)
+    approval_status: Optional[str] = Field(default=None, max_length=50)
 
     # Relationship to link a loan request to a user
-    user: UserInDb = Relationship(back_populates="loans")
+    user: Optional[UserInDb] = Relationship(back_populates="loans")
 
 #______________________________________________________________________________
 #
@@ -96,7 +93,9 @@ class TokenInDB(SQLModel, table=True):
         expires (datetime): Expiration time of the token.
         token (str): The token string.
     """
+
     __tablename__ = "valid_tokens"
+    
     id: int = Field(default=None, primary_key=True)
-    expires: datetime = Field()
-    token: str = Field()
+    expires: datetime = Field(nullable=False)
+    token: str = Field(max_length=512, nullable=False)

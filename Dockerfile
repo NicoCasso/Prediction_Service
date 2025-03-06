@@ -32,10 +32,10 @@ RUN echo "[ODBC Data Sources]" >> /etc/odbc.ini && \
     echo "Driver=ODBC Driver 18 for SQL Server" >> /etc/odbc.ini && \
     echo "Server=madebayosqlserver.database.windows.net" >> /etc/odbc.ini && \
     echo "Database=ussba_db" >> /etc/odbc.ini && \
-    echo "Uid=admin" >> /etc/odbc.ini && \
+    echo "Uid=adminussba" >> /etc/odbc.ini && \
     echo "Pwd=ussba2025RBX" >> /etc/odbc.ini && \
     echo "Encrypt=yes" >> /etc/odbc.ini && \
-    echo "TrustServerCertificate=no" >> /etc/odbc.ini
+    echo "TrustServerCertificate=yes" >> /etc/odbc.ini
 
 # Install wait-for-it.sh
 RUN wget -O /wait-for-it.sh https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh && \

@@ -38,65 +38,89 @@ object_dict = {
         password="maxfla",
         role="admin",
     ),
-    # "active_user": UserCreationData(
-    #     email="usermike@test.com",
-    #     username="usermike",
-    #     password="$2b$12$4Ycft6eU9X5rWXlR4LrsHO2kXZ7B/3pu6P/WKEJJt6Z5kfbt.dx6W",
-    #     role="user",
-    # ),
-    # "admin_mike": UserCreationData(
-    #     email="mike@test.com",
-    #     username="adminmike",
-    #     password="$2b$12$rIOqGQhPBhksARaOz.qHz.rm4tHqmA2DUtMNCt8Hhd18DuXNiWIse",
-    #     role="admin",
-    # ),
+    "active_user": UserCreationData(
+        email="usermike@test.com",
+        username="usermike",
+        password="$2b$12$4Ycft6eU9X5rWXlR4LrsHO2kXZ7B/3pu6P/WKEJJt6Z5kfbt.dx6W",
+        role="user",
+    ),
+    "admin_mike": UserCreationData(
+        email="mike@test.com",
+        username="adminmike",
+        password="$2b$12$rIOqGQhPBhksARaOz.qHz.rm4tHqmA2DUtMNCt8Hhd18DuXNiWIse",
+        role="admin",
+    ),
+    "inactive_user": UserCreationData(
+        email="inactive@test.com",
+        username="inactiveuser",
+        password="inactivedefault",
+        role="user",
+    ),
 }
 
-# Populate the database with users
 def populate_with_users(users_data: dict[str, UserCreationData]):
-    """
-    Populates the database with predefined users.
-    """
-    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})  # Required for SQLite
-    SessionLocal = sessionmaker(autocommit=False, autoflush=True, bind=engine)
+    # Create engine based on DATABASE_URL
+    if "sqlite" in DATABASE_URL:
+        engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+    else:
+        engine = create_engine(DATABASE_URL)
+
+    # Initialize sessionmaker and session
+    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    db_session = None
 
     try:
         db_session = SessionLocal()
 
         for user_key, user_data in users_data.items():
-            # Check if the user already exists in the database
-            result = db_session.query(UserInDb).filter(UserInDb.email == user_data.email).first()
-            if not result:
-                new_user = UserInDb(email=user_data.email)
-                new_user.username = user_data.username
-                new_user.role = user_data.role
+            # Print the email to track which user is being queried
+            print(f"Querying for user with email: {user_data.email}")
+            
+            # Perform the database query
+            existing_user = db_session.query(UserInDb).filter(UserInDb.email == user_data.email).first()
+            
+            # Check if the user exists and print accordingly
+            if existing_user:
+                print(f"User found: {existing_user.email}")
+            else:
+                print("User not found.")
+            
+            # If the user already exists, skip
+            if existing_user:
+                logger.info(f"User {user_data.email} already exists. Skipping.")
+                continue
 
-                # Handle password hashing
-                if is_already_hashed(user_data.password):
-                    new_user.password_hash = user_data.password  # Directly assign pre-hashed password
-                else:
-                    new_user.password_hash = get_password_hash(user_data.password)  # Hash plaintext password
+            new_user = UserInDb(
+                email=user_data.email,
+                username=user_data.username,
+                role=user_data.role,
+                is_active=True,  # Default to active
+            )
 
-                # Handle role-specific logic
-                if user_key in ["admin_mike", "active_user"]:
-                    new_user.is_active = True
-                elif user_key == "inactive_user":
-                    new_user.password_hash = get_password_hash(get_old_password(user_data.username))
-                    new_user.is_active = False
+            # Handle password
+            if is_already_hashed(user_data.password):
+                new_user.password_hash = user_data.password
+            else:
+                new_user.password_hash = get_password_hash(user_data.password)
 
-                try:
-                    db_session.add(new_user)
-                    db_session.commit()
-                    logger.info(f"Added user: {user_data.email}")
-                except IntegrityError as e:
-                    db_session.rollback()
-                    logger.error(f"Error adding user {user_data.email}: {e}")
-                except Exception as e:
-                    db_session.rollback()
-                    logger.error(f"Unexpected error: {e}")
+            # Set inactive if needed (e.g., for testing)
+            if user_key.endswith("_inactive"):
+                new_user.is_active = False
+
+            try:
+                db_session.add(new_user)
+                db_session.commit()
+                logger.info(f"Added user: {user_data.email}")
+            except IntegrityError as e:
+                db_session.rollback()
+                logger.error(f"Error adding user {user_data.email}: {str(e)}")
+            except Exception as e:
+                db_session.rollback()
+                logger.error(f"Unexpected error: {str(e)}")
 
     finally:
-        db_session.close()
+        if db_session:
+            db_session.close()
 
     logger.info("Database population complete.")
 

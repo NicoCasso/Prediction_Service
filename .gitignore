@@ -2,3 +2,7 @@
 __pycache__
 alembic/__pycache__
 .vscode
+.env
+*.sqlite
+*.pyc
+*.db
