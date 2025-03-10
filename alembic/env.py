@@ -26,6 +26,7 @@ def adapt_config() -> dict[str, Any]:
         f"{CONNECTION_STRING}"
         f"&Encrypt={CONNECTION_ARGS['Encrypt']}"
         f"&TrustServerCertificate={CONNECTION_ARGS['TrustServerCertificate']}"
+        f"&Connection Timeout={CONNECTION_ARGS['Connection Timeout']}"
     )
 
     ini_section = config.get_section(config.config_ini_section)

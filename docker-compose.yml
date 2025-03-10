@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+  fastapi:
+    build:
+      context: .
+    container_name: fastapi-app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - sqlserver
+    environment:
+      - SQL_SERVER_HOST=sqlserver
+      - SQL_SERVER_PORT=1433
+      - SQL_SERVER_DATABASE=mydb
+      - SQL_SERVER_USER=sa
+      - SQL_SERVER_PASSWORD=yourStrong(!)Password
+    networks:
+      - app-network
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=yourStrong(!)Password
+    ports:
+      - "1433:1433"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "1433"]
+      retries: 10
+      interval: 5s
+      timeout: 30s
+      start_period: 10s
+
+networks:
+  app-network:
+    driver: bridge

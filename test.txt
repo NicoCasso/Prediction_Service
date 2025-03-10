@@ -1,1 +1,0 @@
-Engine(mssql+pyodbc://fastapifirst:***@localhost:1433/prediction_service_db?driver=ODBC+Driver+18+for+SQL+Server)
