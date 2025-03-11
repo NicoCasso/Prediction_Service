@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from utils.lifespan_handlers import token_cleaner
 from endpoints import auth, loans, admin
 
+#def create_app():
 app = FastAPI(
     lifespan=token_cleaner, 
     title="Prediction Service", 
@@ -12,6 +13,8 @@ app = FastAPI(
 app.include_router(auth.router)
 app.include_router(loans.router)
 app.include_router(admin.router)
+
+    #return app
 
 
 

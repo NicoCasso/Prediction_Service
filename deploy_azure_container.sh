@@ -1,1 +1,1 @@
-docker run --rm -p 3100:8000 prediction-service 
+docker run --rm --detach -p 8000:3100 prediction-service2 

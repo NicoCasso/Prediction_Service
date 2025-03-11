@@ -1,1 +1,1 @@
-docker build -t prediction-service .   
+docker build -t prediction-service2 .   

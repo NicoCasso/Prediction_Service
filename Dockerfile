@@ -24,4 +24,5 @@ COPY . /app
 #documentation uniquement
 EXPOSE 8000
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "3100", "--reload"]
+#CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "3100", "--reload"]
+CMD ["gunicorn", "--bind", "0.0.0.0:3100", "main:app", "--worker-class", "uvicorn.workers.UvicornWorker"]
