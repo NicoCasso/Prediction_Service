@@ -2,6 +2,10 @@ import os
 from dotenv import load_dotenv
 
 
+API_CLIENT_ADDRESS = "0.0.0.0"
+API_CLIENT_PORT = "8000"
+API_INTERNAL_API_PORT = "3100"
+
 DB_USER = "fastapifirst"
 DB_PASSWORD = "passwordfirst1."
 DB_HOST= "ncassonnetsqlserver.database.windows.net"

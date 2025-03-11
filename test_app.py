@@ -14,6 +14,7 @@ from schemas.users_data import UserActivationData, UserInfoData, UserCreationDat
 from schemas.loans_data import LoanRequestData, LoanResponseData, LoanInfoData
 
 from main import app
+from core.config import API_CLIENT_ADDRESS, API_CLIENT_PORT
 
 from populate_db import get_old_password, get_new_password, original_users_dict
 
@@ -42,7 +43,7 @@ async def get_login_response(user_data : UserCreationData) :
     
     async with httpx.AsyncClient() as client:
         response = await client.post(
-            "http://127.0.0.1:8000/auth/login",
+            f"http://{API_CLIENT_ADDRESS}:{API_CLIENT_PORT}/auth/login",
              data = auth_data.model_dump_json())
 
         return response
@@ -89,7 +90,7 @@ async def test_activation():
     # Appel à la route d'activation
     async with httpx.AsyncClient() as client:
         response = await client.post(
-            "http://127.0.0.1:8000/auth/activation", 
+            f"http://{API_CLIENT_ADDRESS}:{API_CLIENT_PORT}/auth/activation", 
             data=activation_data.model_dump_json(), 
             headers= headers)
 
@@ -116,7 +117,7 @@ async def test_logout():
     # Appel à la route de déconnexion
     async with httpx.AsyncClient() as client:
         response = await client.post(
-            "http://127.0.0.1:8000/auth/logout", 
+            f"http://{API_CLIENT_ADDRESS}:{API_CLIENT_PORT}/auth/logout", 
         headers=headers)
 
     # Vérifications
@@ -162,7 +163,7 @@ async def test_loans_request():
     # Appel à la route de soumission de la demande de prêt
     async with httpx.AsyncClient() as client:
         response = await client.post(
-            "http://127.0.0.1:8000/loans/request", 
+            f"http://{API_CLIENT_ADDRESS}:{API_CLIENT_PORT}/loans/request", 
             data=loan_request_data.model_dump_json(), 
             headers=headers)
 
@@ -191,7 +192,7 @@ async def test_loans_history():
     # Appel à la route d'historique des demandes de prêt
     async with httpx.AsyncClient() as client:
         response = await client.get(
-            "http://127.0.0.1:8000/loans/history", 
+            f"http://{API_CLIENT_ADDRESS}:{API_CLIENT_PORT}/loans/history", 
             headers=headers)
 
     # Vérifications
@@ -220,7 +221,7 @@ async def test_get_users():
     # Envoie une requête GET pour récupérer la liste des utilisateurs
     async with httpx.AsyncClient() as client:
         response = await client.get(
-            "http://127.0.0.1:8000/admin/users", 
+            f"http://{API_CLIENT_ADDRESS}:{API_CLIENT_PORT}/admin/users", 
             headers=headers )
 
     # Vérifie la réponse et les résultats attendus
@@ -267,7 +268,7 @@ async def test_create_user():
     # Simuler l'appel à la route de création d'utilisateur
     async with httpx.AsyncClient() as client:
         response = await client.post(
-            "http://127.0.0.1:8000/admin/users", 
+            f"http://{API_CLIENT_ADDRESS}:{API_CLIENT_PORT}/admin/users", 
             data = user_data.model_dump_json(),
             headers = headers)
 
