@@ -88,8 +88,10 @@ terraform/.terraform/
 .terraform/terraform/terraform.tfstate
 terraform/terraform.tfstate.backup
 terraform/terraform.tfstate
+terraform/terraform.tfvars
 
 # Deploy shell
 deploy.sh
 
-
+# Remove DS_Store
+.DS_Store
