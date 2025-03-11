@@ -82,3 +82,6 @@ alembic/__pycache__
 
 # Database
 *.db
+
+# Terraform
+.terraform/
