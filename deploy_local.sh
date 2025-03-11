@@ -1,1 +1,0 @@
-docker run --rm -p 3100:8000 prediction-service 
