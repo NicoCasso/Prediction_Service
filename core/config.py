@@ -2,9 +2,17 @@ import os
 from dotenv import load_dotenv
 
 
+SECRET_KEY: str = os.getenv("SECRET_KEY", "thequickbrownfoxjumpsoverthelazydog")
+ALGORITHM: str = os.getenv("ALGORITHM", "HS256")
+ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
+
 API_CLIENT_ADDRESS = "0.0.0.0"
-API_CLIENT_PORT = "8000"
-API_INTERNAL_PORT = "3100"
+API_CLIENT_PORT = "8000" #unused ???
+API_INTERNAL_PORT = "3100" 
+
+# added by Jeremy manually - pushed here for memory
+AZURE_DNS_LABEL= "nicocassoregistry.azurecr.io/prediction-service-image"
+AZURE_DNS_PORT = "3100"
 
 DB_USER = "fastapifirst"
 DB_PASSWORD = "passwordfirst1."
@@ -57,13 +65,3 @@ CONNECTION_ARGS = {
 # &Encrypt=yes
 # &TrustServerCertificate=no
 # &Connection Timeout=30"
-
-
-load_dotenv()
-SECRET_KEY = os.getenv("SECRET_KEY", "thequickbrownfoxjumpsoverthelazydog")
-
-#SALT = "todayisnotthesamedaythanyesterday"
-
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30  # Expiration du token après 30 minutes
-

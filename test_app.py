@@ -1,5 +1,6 @@
 import httpx
-import uvicorn
+#import uvicorn
+import subprocess
 import asyncio
 
 import json
@@ -14,9 +15,13 @@ from schemas.users_data import UserActivationData, UserInfoData, UserCreationDat
 from schemas.loans_data import LoanRequestData, LoanResponseData, LoanInfoData
 
 from main import app
-from core.config import API_CLIENT_ADDRESS, API_CLIENT_PORT
+#from core.config import API_CLIENT_ADDRESS, API_CLIENT_PORT
+from core.config import AZURE_DNS_LABEL, AZURE_DNS_PORT
 
 from populate_db import get_old_password, get_new_password, original_users_dict
+
+current_client_address = "nicocasso-prediction-service.francecentral.azurecontainer.io"
+current_client_port = AZURE_DNS_PORT
 
 #______________________________________________________________________________
 #
@@ -43,7 +48,7 @@ async def get_login_response(user_data : UserCreationData) :
     
     async with httpx.AsyncClient() as client:
         response = await client.post(
-            f"http://{API_CLIENT_ADDRESS}:{API_CLIENT_PORT}/auth/login",
+            f"http://{current_client_address}:{current_client_port}/auth/login",
              data = auth_data.model_dump_json())
 
         return response
@@ -90,7 +95,7 @@ async def test_activation():
     # Appel à la route d'activation
     async with httpx.AsyncClient() as client:
         response = await client.post(
-            f"http://{API_CLIENT_ADDRESS}:{API_CLIENT_PORT}/auth/activation", 
+            f"http://{current_client_address}:{current_client_port}/auth/activation", 
             data=activation_data.model_dump_json(), 
             headers= headers)
 
@@ -117,8 +122,8 @@ async def test_logout():
     # Appel à la route de déconnexion
     async with httpx.AsyncClient() as client:
         response = await client.post(
-            f"http://{API_CLIENT_ADDRESS}:{API_CLIENT_PORT}/auth/logout", 
-        headers=headers)
+            f"http://{current_client_address}:{current_client_port}/auth/logout", 
+            headers=headers)
 
     # Vérifications
 
@@ -163,7 +168,7 @@ async def test_loans_request():
     # Appel à la route de soumission de la demande de prêt
     async with httpx.AsyncClient() as client:
         response = await client.post(
-            f"http://{API_CLIENT_ADDRESS}:{API_CLIENT_PORT}/loans/request", 
+            f"http://{current_client_address}:{current_client_port}/loans/request", 
             data=loan_request_data.model_dump_json(), 
             headers=headers)
 
@@ -192,7 +197,7 @@ async def test_loans_history():
     # Appel à la route d'historique des demandes de prêt
     async with httpx.AsyncClient() as client:
         response = await client.get(
-            f"http://{API_CLIENT_ADDRESS}:{API_CLIENT_PORT}/loans/history", 
+            f"http://{current_client_address}:{current_client_port}/loans/history", 
             headers=headers)
 
     # Vérifications
@@ -221,7 +226,7 @@ async def test_get_users():
     # Envoie une requête GET pour récupérer la liste des utilisateurs
     async with httpx.AsyncClient() as client:
         response = await client.get(
-            f"http://{API_CLIENT_ADDRESS}:{API_CLIENT_PORT}/admin/users", 
+            f"http://{current_client_address}:{current_client_port}/admin/users", 
             headers=headers )
 
     # Vérifie la réponse et les résultats attendus
@@ -268,7 +273,7 @@ async def test_create_user():
     # Simuler l'appel à la route de création d'utilisateur
     async with httpx.AsyncClient() as client:
         response = await client.post(
-            f"http://{API_CLIENT_ADDRESS}:{API_CLIENT_PORT}/admin/users", 
+            f"http://{current_client_address}:{current_client_port}/admin/users", 
             data = user_data.model_dump_json(),
             headers = headers)
 
@@ -283,14 +288,30 @@ async def test_create_user():
 
 #______________________________________________________________________________
 #
-# region  start_uvicorn
+# region  start_server uvicorn or gunicorn
 #______________________________________________________________________________
-async def start_uvicorn():
-    config = uvicorn.Config("main:app", host="127.0.0.1", port=8000, reload=True)
-    server = uvicorn.Server(config)
-    
+async def start_server():
+
+    # config = uvicorn.Config("main:app", host=current_client_address, port=current_client_port, reload=True)
+    # server = uvicorn.Server(config)
+
     # Démarrer le serveur
-    await server.serve()
+    # await server.serve()
+
+    cmd = [
+        "gunicorn",
+        "-w", "4",
+        "-b", f"{current_client_address}:{current_client_port}",
+        "main:app",
+        "-k", "uvicorn.workers.UvicornWorker",
+        "--reload"
+    ]
+
+    # Lancer Gunicorn en arrière-plan
+    process = subprocess.Popen(cmd)
+    return process
+    
+    
 
 #______________________________________________________________________________
 #
@@ -303,6 +324,19 @@ async def stop_uvicorn(server_task : asyncio.Task):
     except asyncio.CancelledError:
         pass  # Ignorer l'exception d'annulation
 
+#______________________________________________________________________________
+#
+# region  stop_uvicorn
+#______________________________________________________________________________
+async def stop_gunicorn(process : asyncio.Task):
+    # Envoyer un signal SIGTERM pour arrêter Gunicorn proprement
+    process.terminate()  # Equivalent à `kill -15 <PID>`
+
+    # Attendre que le processus se termine proprement
+    process.wait()
+
+    print("Gunicorn a été arrêté proprement.")
+
 
 #______________________________________________________________________________
 #
@@ -310,12 +344,13 @@ async def stop_uvicorn(server_task : asyncio.Task):
 #______________________________________________________________________________
 async def all_tests() :
 
-    # Créer et démarrer le serveur Uvicorn
-    print("Start uvicorn server...")
-    server_task = asyncio.create_task(start_uvicorn())
-    
-    # Attendre un peu pour que le serveur démarre (1 seconde)
-    await asyncio.sleep(1)
+    # # Créer et démarrer le serveur Uvicorn ou gunicorn
+    # print("Start server...")
+    # #server_task = asyncio.create_task(start_server())
+    # process = start_server()
+
+    # # Attendre un peu pour que le serveur démarre (1 seconde)
+    # await asyncio.sleep(1)
  
     tests = []
     tests.append(test_login)
@@ -326,15 +361,18 @@ async def all_tests() :
     tests.append(test_loans_request)
     tests.append(test_logout)
 
+    print()
+    print(f"Test de l'api sur l'adresse suivante : http://{current_client_address}:{current_client_port}")
     # Faire les requêtes HTTP
     print("_________________________________________________________")
     for test in tests:
         await test()
         print("_________________________________________________________")
 
-    # Après avoir effectué les tests, arrêter le serveur proprement
-    print("Stop uvicorn server...")
-    await stop_uvicorn(server_task)
+    # # Après avoir effectué les tests, arrêter le serveur proprement
+    # print("Stop server...")
+    # #await stop_uvicorn(server_task)
+    # stop_gunicorn(process)
 
     print("done.")
 

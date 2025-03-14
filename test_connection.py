@@ -2,7 +2,8 @@ from db.session_provider import get_db_session
 from sqlalchemy import text
 import core.config
 
-# Test de connexion
+
+# Test de connexion à la base de données
 conn_string = (
     f"mssql+pyodbc://{core.config.DB_USER}:"
     f"{core.config.DB_PASSWORD}@"
@@ -18,6 +19,8 @@ conn_args = {
     'Connection Timeout' : core.config.DB_CONNECTION_TIMEOUT # proposed by Azure in the connection string
 }
 
+print()
+print(f"Tentative de connection à la base de données {core.config.DB_NAME}")
 connection_ok = False
 try :
     session = next(get_db_session())
@@ -29,7 +32,7 @@ try :
     connection_ok = True
 except Exception  as e :
     print()
-    print(f"ERROR => {e}")
+    print(f"              ERROR => {e}")
     print()
 finally :
     session.close()
